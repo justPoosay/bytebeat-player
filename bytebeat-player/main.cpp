@@ -1,10 +1,8 @@
-#include "raylib.h"
-
+﻿#include "raylib.h"
 #include <cstdint>
 #include <vector>
 #include <string>
 #include <cctype>
-#include <cmath>
 
 using namespace std;
 
@@ -17,9 +15,10 @@ enum class TokType
     Number,
     VarT,
     Op,
-    Func,
     LParen,
-    RParen
+    RParen,
+    Question, // NOWE
+    Colon     // NOWE
 };
 
 enum class OpType
@@ -33,95 +32,56 @@ enum class OpType
     Or,
     Xor,
     Shl,
-    Shr
-};
-
-enum class FuncType
-{
-    Sin,
-    Cos,
-    Tan,
-    Sqrt,
-    Abs,
-    Log,
-    Exp
+    Shr,
+    Less,    // NOWE
+    Greater, // NOWE
+    Neg,     // NOWE
+    Question, // NOWE
+    Colon     // NOWE
 };
 
 struct Token
 {
-    TokType  type;
-    int      value; // for Number
-    OpType   op;    // for Op
-    FuncType func;  // for Func
+    TokType type;
+    int     value;
+    OpType  op;
 
-    Token()
-        : type(TokType::Number),
-        value(0),
-        op(OpType::Add),
-        func(FuncType::Sin)
-    {
-    }
+    Token() : type(TokType::Number), value(0), op(OpType::Add) {}
 
-    static Token number(int v)
-    {
-        Token t;
-        t.type = TokType::Number;
-        t.value = v;
-        return t;
-    }
-
-    static Token varT()
-    {
-        Token t;
-        t.type = TokType::VarT;
-        return t;
-    }
-
-    static Token makeOp(OpType o)
-    {
-        Token t;
-        t.type = TokType::Op;
-        t.op = o;
-        return t;
-    }
-
-    static Token makeFunc(FuncType f)
-    {
-        Token t;
-        t.type = TokType::Func;
-        t.func = f;
-        return t;
-    }
-
-    static Token lparen()
-    {
-        Token t;
-        t.type = TokType::LParen;
-        return t;
-    }
-
-    static Token rparen()
-    {
-        Token t;
-        t.type = TokType::RParen;
-        return t;
-    }
+    static Token number(int v) { Token t; t.type = TokType::Number; t.value = v; return t; }
+    static Token varT() { Token t; t.type = TokType::VarT; return t; }
+    static Token makeOp(OpType o) { Token t; t.type = TokType::Op; t.op = o; return t; }
+    static Token lparen() { Token t; t.type = TokType::LParen; return t; }
+    static Token rparen() { Token t; t.type = TokType::RParen; return t; }
+    static Token question() { Token t; t.type = TokType::Question; return t; } // NOWE
+    static Token colon() { Token t; t.type = TokType::Colon; return t; }       // NOWE
 };
 
 static int Precedence(OpType op)
 {
     switch (op)
     {
-    case OpType::Or:  return 1;
-    case OpType::Xor: return 2;
-    case OpType::And: return 3;
-    case OpType::Shl:
-    case OpType::Shr: return 4;
-    case OpType::Add:
-    case OpType::Sub: return 5;
+    case OpType::Neg:     return 11;
+
     case OpType::Mul:
     case OpType::Div:
-    case OpType::Mod: return 6;
+    case OpType::Mod:     return 10;
+
+    case OpType::Add:
+    case OpType::Sub:     return 9;
+
+    case OpType::Shl:
+    case OpType::Shr:     return 8;
+
+    case OpType::Less:
+    case OpType::Greater: return 7;
+
+    case OpType::And:     return 6;
+    case OpType::Xor:     return 5;
+    case OpType::Or:      return 4;
+
+    case OpType::Question: return 3;
+    case OpType::Colon:    return 2;
     }
     return 0;
 }
@@ -133,334 +93,135 @@ public:
     {
         error.clear();
         vector<Token> tokens;
-        if (!Tokenize(expr, tokens, error))
-            return false;
-        if (!ToRPN(tokens, error))
-            return false;
+        if (!Tokenize(expr, tokens, error)) return false;
+        if (!ToRPN(tokens, error)) return false;
         return true;
     }
 
-    // Evaluate expression for integer time t, return 0..255
-    int Eval(uint32_t t) const
+    int Eval(uint64_t t) const
     {
-        if (m_rpn.empty())
-            return 0;
-
+        if (m_rpn.empty()) return 0;
         vector<int> stack;
         stack.reserve(32);
 
         for (const Token& tok : m_rpn)
         {
-            switch (tok.type)
-            {
-            case TokType::Number:
-                stack.push_back(tok.value);
-                break;
-
-            case TokType::VarT:
-                stack.push_back(static_cast<int>(t));
-                break;
-
-            case TokType::Op:
-            {
-                if (stack.size() < 2)
-                    return 0;
-                int b = stack.back(); stack.pop_back();
-                int a = stack.back(); stack.pop_back();
-                int r = 0;
-
-                switch (tok.op)
-                {
-                case OpType::Add: r = a + b; break;
-                case OpType::Sub: r = a - b; break;
-                case OpType::Mul: r = a * b; break;
-                case OpType::Div: r = (b != 0) ? a / b : 0; break;
-                case OpType::Mod: r = (b != 0) ? a % b : 0; break;
-                case OpType::And: r = a & b; break;
-                case OpType::Or:  r = a | b; break;
-                case OpType::Xor: r = a ^ b; break;
-                case OpType::Shl: r = a << b; break;
-                case OpType::Shr: r = a >> b; break;
+            if (tok.type == TokType::Number) stack.push_back(tok.value);
+            else if (tok.type == TokType::VarT) stack.push_back((int)t);
+            else if (tok.type == TokType::Op) {
+                if (tok.op == OpType::Neg) { // NOWE
+                    if (!stack.empty()) stack.back() = -stack.back();
                 }
-
-                stack.push_back(r);
-                break;
-            }
-
-            case TokType::Func:
-            {
-                if (stack.empty())
-                    return 0;
-                int a = stack.back();
-                stack.pop_back();
-
-                double x = static_cast<double>(a);
-                double r = 0.0;
-
-                switch (tok.func)
-                {
-                case FuncType::Sin:  r = sin(x);           break;
-                case FuncType::Cos:  r = cos(x);           break;
-                case FuncType::Tan:  r = tan(x);           break;
-                case FuncType::Sqrt: r = (x >= 0.0) ? sqrt(x) : 0.0; break;
-                case FuncType::Abs:  r = fabs(x);          break;
-                case FuncType::Log:  r = (x > 0.0) ? log(x) : 0.0;    break;
-                case FuncType::Exp:  r = exp(x);           break;
+                else if (stack.size() >= 2) {
+                    int b = stack.back(); stack.pop_back();
+                    int a = stack.back(); stack.pop_back();
+                    switch (tok.op) {
+                    case OpType::Add: stack.push_back(a + b); break;
+                    case OpType::Sub: stack.push_back(a - b); break;
+                    case OpType::Mul: stack.push_back(a * b); break;
+                    case OpType::Div: stack.push_back(b ? a / b : 0); break;
+                    case OpType::Mod: stack.push_back(b ? a % b : 0); break;
+                    case OpType::And: stack.push_back(a & b); break;
+                    case OpType::Or:  stack.push_back(a | b); break;
+                    case OpType::Xor: stack.push_back(a ^ b); break;
+                    case OpType::Shl: stack.push_back(a << b); break;
+                    case OpType::Shr: stack.push_back(a >> b); break;
+                    case OpType::Less:    stack.push_back(a < b); break; // NOWE
+                    case OpType::Greater: stack.push_back(a > b); break; // NOWE
+                    }
                 }
-
-                int ri = static_cast<int>(lround(r));
-                stack.push_back(ri);
-                break;
             }
-
-            default:
-                break;
+            else if (tok.type == TokType::Question) { // NOWE (Ternary)
+                if (stack.size() >= 3) {
+                    int f = stack.back(); stack.pop_back();
+                    int v = stack.back(); stack.pop_back();
+                    int c = stack.back(); stack.pop_back();
+                    stack.push_back(c ? v : f);
+                }
             }
         }
-
-        if (stack.empty())
-            return 0;
-
-        return stack.back() & 0xFF;
+        return stack.empty() ? 0 : (stack.back() & 0xFF);
     }
 
 private:
-    bool Tokenize(const string& expr,
-        vector<Token>& tokens,
-        string& error)
+    bool Tokenize(const string& expr, vector<Token>& tokens, string& error)
     {
         size_t i = 0;
-        while (i < expr.size())
-        {
+        while (i < expr.size()) {
             char c = expr[i];
-
-            if (isspace((unsigned char)c))
-            {
-                ++i;
-                continue;
+            if (isspace((unsigned char)c)) { i++; continue; }
+            if (isdigit((unsigned char)c)) {
+                int v = 0;
+                while (i < expr.size() && isdigit((unsigned char)expr[i])) v = v * 10 + (expr[i++] - '0');
+                tokens.push_back(Token::number(v)); continue;
             }
+            if (c == 't' || c == 'T') { tokens.push_back(Token::varT()); i++; continue; }
+            if (c == '(') { tokens.push_back(Token::lparen()); i++; continue; }
+            if (c == ')') { tokens.push_back(Token::rparen()); i++; continue; }
+            if (c == '?') { tokens.push_back(Token::question()); i++; continue; } // NOWE
+            if (c == ':') { tokens.push_back(Token::colon()); i++; continue; } // NOWE
 
-            if (isdigit((unsigned char)c))
-            {
-                int value = 0;
-                while (i < expr.size() && isdigit((unsigned char)expr[i]))
-                {
-                    value = value * 10 + (expr[i] - '0');
-                    ++i;
-                }
-                tokens.push_back(Token::number(value));
-                continue;
-            }
-
-            // identifiers: t, sin, cos, tan, sqrt, abs, log, exp
-            if (isalpha((unsigned char)c))
-            {
-                string ident;
-                while (i < expr.size() && isalpha((unsigned char)expr[i]))
-                {
-                    ident.push_back(expr[i]);
-                    ++i;
-                }
-
-                if (ident == "t" || ident == "T")
-                {
-                    tokens.push_back(Token::varT());
-                }
-                else if (ident == "sin")
-                {
-                    tokens.push_back(Token::makeFunc(FuncType::Sin));
-                }
-                else if (ident == "cos")
-                {
-                    tokens.push_back(Token::makeFunc(FuncType::Cos));
-                }
-                else if (ident == "tan")
-                {
-                    tokens.push_back(Token::makeFunc(FuncType::Tan));
-                }
-                else if (ident == "sqrt")
-                {
-                    tokens.push_back(Token::makeFunc(FuncType::Sqrt));
-                }
-                else if (ident == "abs")
-                {
-                    tokens.push_back(Token::makeFunc(FuncType::Abs));
-                }
-                else if (ident == "log")
-                {
-                    tokens.push_back(Token::makeFunc(FuncType::Log));
-                }
-                else if (ident == "exp")
-                {
-                    tokens.push_back(Token::makeFunc(FuncType::Exp));
-                }
-                else
-                {
-                    error = "Unknown identifier: " + ident;
-                    return false;
-                }
-                continue;
-            }
-
-            if (c == '(')
-            {
-                tokens.push_back(Token::lparen());
-                ++i;
-                continue;
-            }
-            if (c == ')')
-            {
-                tokens.push_back(Token::rparen());
-                ++i;
-                continue;
-            }
-
-            // Operators (including << and >>)
-            if (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' ||
-                c == '&' || c == '|' || c == '^' || c == '<' || c == '>')
-            {
-                if (c == '<' || c == '>')
-                {
-                    // << or >>
-                    if (i + 1 < expr.size() && expr[i + 1] == c)
-                    {
-                        OpType op = (c == '<') ? OpType::Shl : OpType::Shr;
-                        tokens.push_back(Token::makeOp(op));
-                        i += 2;
-                        continue;
+            if (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '&' || c == '|' || c == '^' || c == '<' || c == '>') {
+                // Obsługa <<, >> oraz <, >
+                if (c == '<' || c == '>') {
+                    if (i + 1 < expr.size() && expr[i + 1] == c) {
+                        tokens.push_back(Token::makeOp(c == '<' ? OpType::Shl : OpType::Shr));
+                        i += 2; continue;
                     }
-                    else
-                    {
-                        error = "Expected << or >>";
-                        return false;
+                    else {
+                        tokens.push_back(Token::makeOp(c == '<' ? OpType::Less : OpType::Greater));
+                        i++; continue;
                     }
                 }
-
+                // Unarny minus
+                if (c == '-') {
+                    bool isUn = tokens.empty() || tokens.back().type == TokType::LParen || tokens.back().type == TokType::Op || tokens.back().type == TokType::Question || tokens.back().type == TokType::Colon;
+                    tokens.push_back(Token::makeOp(isUn ? OpType::Neg : OpType::Sub));
+                    i++; continue;
+                }
                 OpType op;
-                switch (c)
-                {
-                case '+': op = OpType::Add; break;
-                case '-': op = OpType::Sub; break;
-                case '*': op = OpType::Mul; break;
-                case '/': op = OpType::Div; break;
-                case '%': op = OpType::Mod; break;
-                case '&': op = OpType::And; break;
-                case '|': op = OpType::Or;  break;
+                switch (c) {
+                case '+': op = OpType::Add; break; case '*': op = OpType::Mul; break; case '/': op = OpType::Div; break;
+                case '%': op = OpType::Mod; break; case '&': op = OpType::And; break; case '|': op = OpType::Or;  break;
                 case '^': op = OpType::Xor; break;
-                default:
-                    error = "Unknown operator";
-                    return false;
                 }
-                tokens.push_back(Token::makeOp(op));
-                ++i;
-                continue;
+                tokens.push_back(Token::makeOp(op)); i++; continue;
             }
-
-            error = string("Unexpected char: '") + c + "'";
-            return false;
+            i++;
         }
-
-        if (tokens.empty())
-        {
-            error = "Empty expression";
-            return false;
-        }
-
-        return true;
+        return !tokens.empty();
     }
 
-    bool ToRPN(const vector<Token>& tokens,
-        string& error)
+    bool ToRPN(const vector<Token>& tokens, string& error)
     {
-        m_rpn.clear();
-        vector<Token> opStack;
-
-        for (const Token& tok : tokens)
-        {
-            switch (tok.type)
-            {
-            case TokType::Number:
-            case TokType::VarT:
-                m_rpn.push_back(tok);
-                break;
-
-            case TokType::Func:
-                // functions go on operator stack, popped after ')'
-                opStack.push_back(tok);
-                break;
-
-            case TokType::Op:
-            {
-                while (!opStack.empty() &&
-                    opStack.back().type == TokType::Op &&
-                    Precedence(opStack.back().op) >= Precedence(tok.op))
-                {
-                    m_rpn.push_back(opStack.back());
-                    opStack.pop_back();
-                }
-                opStack.push_back(tok);
-                break;
+        m_rpn.clear(); vector<Token> s;
+        for (const auto& t : tokens) {
+            if (t.type == TokType::Number || t.type == TokType::VarT) m_rpn.push_back(t);
+            else if (t.type == TokType::LParen) s.push_back(t);
+            else if (t.type == TokType::RParen) {
+                while (!s.empty() && s.back().type != TokType::LParen) { m_rpn.push_back(s.back()); s.pop_back(); }
+                if (!s.empty()) s.pop_back();
             }
-
-            case TokType::LParen:
-                opStack.push_back(tok);
-                break;
-
-            case TokType::RParen:
-            {
-                bool foundL = false;
-                while (!opStack.empty())
-                {
-                    if (opStack.back().type == TokType::LParen)
-                    {
-                        opStack.pop_back();
-                        foundL = true;
-                        break;
-                    }
-                    m_rpn.push_back(opStack.back());
-                    opStack.pop_back();
-                }
-                if (!foundL)
-                {
-                    error = "Mismatched parentheses";
-                    return false;
-                }
-
-                // If function is on top, pop it to output
-                if (!opStack.empty() && opStack.back().type == TokType::Func)
-                {
-                    m_rpn.push_back(opStack.back());
-                    opStack.pop_back();
-                }
-                break;
+            else if (t.type == TokType::Op) {
+                while (!s.empty() && s.back().type == TokType::Op && Precedence(s.back().op) >= Precedence(t.op)) { m_rpn.push_back(s.back()); s.pop_back(); }
+                s.push_back(t);
             }
+            else if (t.type == TokType::Question) { // NOWE
+                while (!s.empty() && s.back().type == TokType::Op) { m_rpn.push_back(s.back()); s.pop_back(); }
+                s.push_back(t);
+            }
+            else if (t.type == TokType::Colon) { // NOWE
+                while (!s.empty() && s.back().type != TokType::Question) { m_rpn.push_back(s.back()); s.pop_back(); }
             }
         }
-
-        while (!opStack.empty())
-        {
-            if (opStack.back().type == TokType::LParen ||
-                opStack.back().type == TokType::RParen)
-            {
-                error = "Mismatched parentheses";
-                return false;
-            }
-            m_rpn.push_back(opStack.back());
-            opStack.pop_back();
-        }
-
-        if (m_rpn.empty())
-        {
-            error = "Expression reduced to nothing";
-            return false;
-        }
-
+        while (!s.empty()) { m_rpn.push_back(s.back()); s.pop_back(); }
         return true;
     }
-
 private:
     vector<Token> m_rpn;
 };
+
+// ... TUTAJ RESZTA TWOJEGO ORYGINALNEGO KODU (main, RecreateAudioStream, pętla rysowania) ...
 
 // =============================
 // Bytebeat render (mono), at fixed output rate
@@ -486,68 +247,42 @@ static void RenderBytebeatOneShot(
 {
     if (bytebeatRate <= 0) bytebeatRate = 8000;
     if (outputRate <= 0) outputRate = 44100;
-    if (maxDurationSeconds <= 0.0f) maxDurationSeconds = 5.0f;
 
-    uint32_t maxFrames =
-        (uint32_t)round(maxDurationSeconds * (float)outputRate);
+    // 1. Obliczamy okres Bytebeatu w świecie "t"
+    // Dla t&t>>8 i większości wzorów to 65536 (2^16)
+    const uint32_t bytebeatPeriod = 65536;
 
+    // 2. Obliczamy ile to próbek w wyjściowym sample rate (np. 44100)
+    // Używamy double dla precyzji obliczeń klatki stopu
+    uint32_t framesPerPeriod = (uint32_t)round(((double)bytebeatPeriod / bytebeatRate) * outputRate);
+
+    uint32_t maxFrames = (uint32_t)round(maxDurationSeconds * outputRate);
     outSamples.clear();
-    outSamples.reserve(maxFrames);
+    outSamples.reserve(framesPerPeriod + 100);
 
-    const int      silenceThreshold = 300;                // amplitude threshold
-    const uint32_t minFramesToRender = outputRate / 10;    // at least 0.1 s
-    const uint32_t silenceRunFrames = outputRate / 5;     // 0.2 s of silence to stop
-
-    uint32_t lastLoudIndex = 0;
-
-    float tFloat = 0.0f;
-    float tInc = (float)bytebeatRate / (float)outputRate;
+    // Licznik stałoprzecinkowy, aby uniknąć pływającego pitchu
+    // t_accum trzyma czas pomnożony przez outputRate
+    uint64_t t_accum = 0;
 
     for (uint32_t i = 0; i < maxFrames; ++i)
     {
-        uint32_t t = (uint32_t)tFloat;
-        tFloat += tInc;
+        // t = (i * bytebeatRate) / outputRate
+        // To jest najdokładniejsza metoda obliczania t dla każdej klatki audio
+        uint32_t t = (uint32_t)((uint64_t)i * bytebeatRate / outputRate);
 
-        int v = expr.Eval(t);           // 0..255
-
-        // Map 0..255 -> [-1, 1]
-        float s = (float)((v & 0xFF) / 127.5 - 1.0);
-        if (s > 1.0f) s = 1.0f;
-        if (s < -1.0f) s = -1.0f;
-
-        short sample = (short)lround(s * 32767.0f);
+        int v = expr.Eval(t);
+        short sample = (short)(((v & 0xFF) - 128) << 8);
         outSamples.push_back(sample);
 
-        if (abs((int)sample) > silenceThreshold)
-            lastLoudIndex = i;
-
-        if (i > minFramesToRender && (i - lastLoudIndex) > silenceRunFrames)
-            break;
-    }
-
-    if (outSamples.empty())
-        return;
-
-    // Trim to last loud frame + a bit
-    uint32_t used = (uint32_t)outSamples.size();
-    uint32_t cutoff = lastLoudIndex + (outputRate / 50); // ~20 ms extra
-    if (cutoff < used)
-        used = cutoff;
-
-    if (used == 0)
-        used = (uint32_t)outSamples.size(); // fallback
-
-    outSamples.resize(used);
-
-    // Fade-out the last 256 frames to avoid click
-    uint32_t fadeLen = 256;
-    if (fadeLen > used) fadeLen = used;
-
-    for (uint32_t i = 0; i < fadeLen; ++i)
-    {
-        uint32_t idx = used - 1 - i;
-        float    g = 1.0f - (float)i / (float)fadeLen; // 1 -> 0
-        outSamples[idx] = (short)lround((float)outSamples[idx] * g);
+        // DETEKCJA PĘTLI
+        // Zamiast porównywać dżwięk, sprawdzamy czy t przekroczyło okres
+        if (i >= framesPerPeriod)
+        {
+            // Sprawdzamy, czy t właśnie przeskoczyło przez wielokrotność 65536
+            // albo po prostu ucinamy na obliczonym framesPerPeriod
+            outSamples.resize(i);
+            return; // Mamy idealną pętlę
+        }
     }
 }
 
