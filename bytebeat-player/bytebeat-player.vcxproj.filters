@@ -19,4 +19,35 @@
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="font_data.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="icon_data.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon_256.png">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="icon_64.png">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="icon.ico">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="SF-Pro-Rounded-Medium.otf" />
+    <Font Include="SpaceMono-Regular.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="bytebeat-player.rc">
+      <Filter>Pliki zasobów</Filter>
+    </ResourceCompile>
+  </ItemGroup>
 </Project>

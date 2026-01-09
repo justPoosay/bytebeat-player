@@ -141,6 +141,23 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="font_data.h" />
+    <ClInclude Include="icon_data.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico" />
+    <Image Include="icon_256.png" />
+    <Image Include="icon_64.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="SF-Pro-Rounded-Medium.otf" />
+    <Font Include="SpaceMono-Regular.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="bytebeat-player.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
