@@ -140,21 +140,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AudioSystem.cpp" />
+    <ClCompile Include="Bytebeat.cpp" />
+    <ClCompile Include="GlobalState.cpp" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
     <ClCompile Include="imgui_tables.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Presets.cpp" />
     <ClCompile Include="rlImGui.cpp" />
     <ClCompile Include="TextEditor.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Desktop\temp\temp\extras\FA6FreeSolidFontData.h" />
     <ClInclude Include="..\..\Desktop\temp\temp\extras\IconsFontAwesome6.h" />
     <ClInclude Include="..\..\Desktop\temp\temp\font_data_2.h" />
+    <ClInclude Include="AudioSystem.h" />
+    <ClInclude Include="Bytebeat.h" />
     <ClInclude Include="font_data.h" />
+    <ClInclude Include="GlobalState.h" />
     <ClInclude Include="icon_data.h" />
+    <ClInclude Include="Presets.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="icon.ico" />
