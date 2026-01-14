@@ -1,8 +1,10 @@
 #include "Bytebeat.h"
+#include "GlobalState.h"
 #include <cmath>
 #include <cctype>
 #include <algorithm>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -12,6 +14,7 @@ Token Token::makeOp(OpType o, int p) { Token t; t.type = TokType::Op; t.op = o; 
 Token Token::makeFun(FunType f, int p) { Token t; t.type = TokType::Fun; t.fun = f; t.pos = p; return t; }
 Token Token::lparen(int p) { Token t; t.type = TokType::LParen; t.pos = p; return t; }
 Token Token::rparen(int p) { Token t; t.type = TokType::RParen; t.pos = p; return t; }
+Token Token::ident(string n, int p) { Token t; t.type = TokType::Identifier; t.name = n; t.pos = p; return t; }
 
 bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPos) {
     error.clear(); errorPos = -1; m_rpn.clear();
@@ -37,7 +40,8 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
             else if (name == "cos") tokens.push_back(Token::makeFun(FunType::Cos, start));
             else if (name == "abs") tokens.push_back(Token::makeFun(FunType::Abs, start));
             else if (name == "int" || name == "floor") tokens.push_back(Token::makeFun(FunType::Int, start));
-            else { error = "Unknown function"; errorPos = start; return false; }
+            else tokens.push_back(Token::ident(name, start));
+
             expectUnary = false;
         }
         else if (expr[i] == '(') { tokens.push_back(Token::lparen(start)); i++; expectUnary = true; }
@@ -50,7 +54,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
             if (expr[i] == '-' && expectUnary) { ot = OpType::Neg; i++; }
             else {
                 char c = expr[i];
-                if (string("+-*/%&|^<>!=").find(c) == string::npos) { error = "Unknown char"; errorPos = start; return false; }
+                if (string("+-*/%&|^<>!=,").find(c) == string::npos) { error = "Unknown char"; errorPos = start; return false; }
 
                 if (i + 1 < expr.size()) {
                     string op2 = expr.substr(i, 2);
@@ -64,11 +68,19 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                 }
                 else {
                 single_op:
-                    if (c == '<') ot = OpType::LT; else if (c == '>') ot = OpType::GT;
-                    else if (c == '+') ot = OpType::Add; else if (c == '-') ot = OpType::Sub;
-                    else if (c == '*') ot = OpType::Mul; else if (c == '/') ot = OpType::Div;
-                    else if (c == '%') ot = OpType::Mod; else if (c == '&') ot = OpType::And;
-                    else if (c == '|') ot = OpType::Or;  else if (c == '^') ot = OpType::Xor;
+                    if (c == '<') ot = OpType::LT; 
+                    else if (c == '>') ot = OpType::GT;
+                    else if (c == '+') ot = OpType::Add;
+                    else if (c == '-') ot = OpType::Sub;
+                    else if (c == '*') ot = OpType::Mul; 
+                    else if (c == '/') ot = OpType::Div;
+                    else if (c == '%') ot = OpType::Mod;
+                    else if (c == '&') ot = OpType::And;
+                    else if (c == '|') ot = OpType::Or; 
+                    else if (c == '^') ot = OpType::Xor;
+                    else if (c == '!') ot = OpType::BitNot;
+                    else if (c == '=') ot = OpType::Assign;
+                    else if (c == ',') ot = OpType::Coma; 
                     else { error = "Syntax error"; errorPos = start; return false; }
                     i++;
                 }
@@ -126,6 +138,10 @@ int BytebeatExpression::Eval(uint32_t t) const {
                 else stack[sp] = floor(stack[sp]);
             }
         }
+        else if (tok.type == TokType::Identifier) {
+            if (state.jsVars.count(tok.name)) stack[++sp] = state.jsVars[tok.name];
+            else stack[++sp] = 0;
+        }
         else if (tok.type == TokType::Quest) continue;
         else if (tok.type == TokType::Colon) {
             if (sp >= 2) {
@@ -135,6 +151,7 @@ int BytebeatExpression::Eval(uint32_t t) const {
                 stack[++sp] = (cond != 0) ? v : f;
             }
         }
+
         else {
             if (tok.op == OpType::Neg) {
                 if (sp >= 0) stack[sp] = -stack[sp];
@@ -149,13 +166,13 @@ int BytebeatExpression::Eval(uint32_t t) const {
                 case OpType::Add: stack[sp] = a + b; break;
                 case OpType::Sub: stack[sp] = a - b; break;
                 case OpType::Mul: stack[sp] = a * b; break;
-                case OpType::Div: stack[sp] = b != 0 ? a / b : 0; break;
-                case OpType::Mod: stack[sp] = b != 0 ? fmod(a, b) : 0; break;
-                case OpType::And: stack[sp] = (int64_t)a & (int64_t)b; break;
-                case OpType::Or:  stack[sp] = (int64_t)a | (int64_t)b; break;
-                case OpType::Xor: stack[sp] = (int64_t)a ^ (int64_t)b; break;
-                case OpType::Shl: stack[sp] = (int64_t)a << (int64_t)b; break;
-                case OpType::Shr: stack[sp] = (uint32_t)a >> (uint32_t)b; break;
+                case OpType::Div: stack[sp] = (b != 0) ? (a / b) : 0; break;
+                case OpType::Mod: stack[sp] = (b != 0) ? (double)((int64_t)a % (int64_t)b) : 0; break;
+                case OpType::And: stack[sp] = (double)((int32_t)a & (int32_t)b); break;
+                case OpType::Or:  stack[sp] = (double)((int32_t)a | (int32_t)b); break;
+                case OpType::Xor: stack[sp] = (double)((int32_t)a ^ (int32_t)b); break;
+                case OpType::Shl: stack[sp] = (double)((int32_t)a << ((int32_t)b & 0x1F)); break; // 0x1F bo JS maskuje shift do 5 bitów
+                case OpType::Shr: stack[sp] = (double)((int32_t)a >> ((int32_t)b & 0x1F)); break;
                 case OpType::LT:  stack[sp] = a < b; break;
                 case OpType::GT:  stack[sp] = a > b; break;
                 case OpType::LE:  stack[sp] = a <= b; break;
@@ -167,4 +184,42 @@ int BytebeatExpression::Eval(uint32_t t) const {
         }
     }
     return (sp >= 0) ? ((int)stack[0] & 0xFF) : 0;
+}
+
+bool ComplexEngine::Compile(const std::string& code, std::string& err) {
+    instructions.clear();
+    std::stringstream ss(code);
+    std::string segment;
+    while (std::getline(ss, segment, ',')) {
+        if (segment.find_first_not_of(" \t\n\r") == std::string::npos) continue;
+
+        Instruction ins;
+        size_t eq = segment.find('=');
+        if (eq != std::string::npos) {
+            ins.type = Instruction::Type::AssignVar;
+            ins.varName = segment.substr(0, eq);
+            ins.varName.erase(remove_if(ins.varName.begin(), ins.varName.end(), ::isspace), ins.varName.end());
+            int ep;
+            if (!ins.expr.Compile(segment.substr(eq + 1), err, ep)) return false;
+        }
+        else {
+            ins.type = Instruction::Type::EvalExpr;
+            int ep;
+            if (!ins.expr.Compile(segment, err, ep)) return false;
+        }
+        instructions.push_back(ins);
+    }
+    return !instructions.empty();
+}
+
+int ComplexEngine::Eval(uint32_t t) {
+    state.jsVars["t"] = (double)t;
+    double lastVal = 0;
+    for (auto& ins : instructions) {
+        lastVal = ins.expr.Eval(t);
+        if (ins.type == Instruction::Type::AssignVar) state.jsVars[ins.varName] = lastVal;
+    }
+
+    int32_t finalInt = (int32_t)lastVal;
+    return (int)(finalInt & 0xFF);
 }

@@ -72,6 +72,14 @@ int main() {
         ClearBackground({ 15, 15, 20, 255 });
         rlImGuiBegin();
 
+        if (state.editor.IsTextChanged()) {
+            if (state.currentMode == AppState::BytebeatMode::C_Compatible) state.valid = state.expr.Compile(state.editor.GetText(), state.errorMsg, state.errorPos);
+            else state.valid = state.complexEngine.Compile(state.editor.GetText(), state.errorMsg);
+
+            // Opcjonalnie: jeśli kompilacja się udała, zresetuj czas t=0 (jak w klasycznym JS composerze)
+            // if (state.valid) state.t = 0; 
+        }
+
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(viewport->ID, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
 
@@ -111,6 +119,19 @@ int main() {
         if (ImGui::Button(state.playing ? "STOP" : "PLAY", ImVec2(100, 40))) state.playing = !state.playing;
         ImGui::SameLine();
         if (ImGui::Button("Reset", ImVec2(100, 40))) { state.t = 0; state.tAccum = 0.0; }
+        ImGui::SameLine();
+        ImGui::Text("Engine Mode:");
+        if (ImGui::RadioButton("Classic (C)", state.currentMode == AppState::BytebeatMode::C_Compatible)) {
+            state.currentMode = AppState::BytebeatMode::C_Compatible;
+            // Wymuś rekompilację przy zmianie trybu
+            state.valid = state.expr.Compile(state.editor.GetText(), state.errorMsg, state.errorPos);
+        }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Javascript (JS)", state.currentMode == AppState::BytebeatMode::JS_Compatible)) {
+            state.currentMode = AppState::BytebeatMode::JS_Compatible;
+            // Wymuś rekompilację
+            state.valid = state.complexEngine.Compile(state.editor.GetText(), state.errorMsg);
+        }
 
         char zoomBuf[32];
         if (state.zoomIdx == 0) sprintf(zoomBuf, "1x");
@@ -224,8 +245,15 @@ int main() {
             float tIdx1 = ((float)n / 256.0f) * numSamples;
             float tIdx2 = ((float)(n + 1) / 256.0f) * numSamples;
 
-            int v1 = state.expr.Eval(triggeredT + (uint32_t)tIdx1);
-            int v2 = state.expr.Eval(triggeredT + (uint32_t)tIdx2);
+            int v1, v2;
+            if (state.currentMode == AppState::BytebeatMode::C_Compatible) {
+                v1 = state.expr.Eval(triggeredT + (uint32_t)tIdx1);
+                v2 = state.expr.Eval(triggeredT + (uint32_t)tIdx2);
+            }
+            else if (state.currentMode == AppState::BytebeatMode::JS_Compatible) {
+                v1 = state.complexEngine.Eval(triggeredT + (uint32_t)tIdx1);
+                v2 = state.complexEngine.Eval(triggeredT + (uint32_t)tIdx2);
+            }
 
             float sample1 = ((v1 & 0xFF) / 255.0f);
             float sample2 = ((v2 & 0xFF) / 255.0f);

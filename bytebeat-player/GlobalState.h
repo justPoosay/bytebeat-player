@@ -6,6 +6,10 @@
 struct AppState {
     // Logic
     BytebeatExpression expr;
+    ComplexEngine complexEngine;
+    enum class BytebeatMode { C_Compatible, JS_Compatible };
+    BytebeatMode currentMode = BytebeatMode::C_Compatible;
+    std::map<std::string, double> jsVars;
     TextEditor editor;
     bool playing = false;
     bool valid = false;
