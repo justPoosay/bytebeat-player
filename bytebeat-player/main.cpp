@@ -75,9 +75,6 @@ int main() {
         if (state.editor.IsTextChanged()) {
             if (state.currentMode == AppState::BytebeatMode::C_Compatible) state.valid = state.expr.Compile(state.editor.GetText(), state.errorMsg, state.errorPos);
             else state.valid = state.complexEngine.Compile(state.editor.GetText(), state.errorMsg);
-
-            // Opcjonalnie: jeśli kompilacja się udała, zresetuj czas t=0 (jak w klasycznym JS composerze)
-            // if (state.valid) state.t = 0; 
         }
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -120,26 +117,38 @@ int main() {
         ImGui::SameLine();
         if (ImGui::Button("Reset", ImVec2(100, 40))) { state.t = 0; state.tAccum = 0.0; }
         ImGui::SameLine();
-        ImGui::Text("Engine Mode:");
-        if (ImGui::RadioButton("Classic (C)", state.currentMode == AppState::BytebeatMode::C_Compatible)) {
-            state.currentMode = AppState::BytebeatMode::C_Compatible;
-            // Wymuś rekompilację przy zmianie trybu
-            state.valid = state.expr.Compile(state.editor.GetText(), state.errorMsg, state.errorPos);
-        }
-        ImGui::SameLine();
-        if (ImGui::RadioButton("Javascript (JS)", state.currentMode == AppState::BytebeatMode::JS_Compatible)) {
-            state.currentMode = AppState::BytebeatMode::JS_Compatible;
-            // Wymuś rekompilację
-            state.valid = state.complexEngine.Compile(state.editor.GetText(), state.errorMsg);
-        }
 
         char zoomBuf[32];
         if (state.zoomIdx == 0) sprintf(zoomBuf, "1x");
         else sprintf(zoomBuf, "1/%dx", (int)state.zoomFactors[state.zoomIdx]);
-
-        ImGui::SameLine();
         if (ImGui::Button(zoomBuf, ImVec2(60, 40))) {
             state.zoomIdx = (state.zoomIdx + 1) % 4;
+        }
+        ImGui::SameLine();
+
+        const char* modeNames[] = { "Classic (C)", "Javascript (JS)" };
+        int currentModeIdx = (state.currentMode == AppState::BytebeatMode::C_Compatible) ? 0 : 1;
+        ImGui::SetNextItemWidth(250.0f);
+        if (ImGui::BeginCombo("##EngineMode", modeNames[currentModeIdx])) {
+            for (int i = 0; i < 2; i++) {
+                bool isSelected = (currentModeIdx == i);
+                if (ImGui::Selectable(modeNames[i], isSelected)) {
+                    // Zmiana trybu
+                    state.currentMode = (i == 0) ? AppState::BytebeatMode::C_Compatible : AppState::BytebeatMode::JS_Compatible;
+
+                    // Rekompilacja po zmianie silnika
+                    if (state.currentMode == AppState::BytebeatMode::C_Compatible) {
+                        state.valid = state.expr.Compile(state.editor.GetText(), state.errorMsg, state.errorPos);
+                    }
+                    else {
+                        state.valid = state.complexEngine.Compile(state.editor.GetText(), state.errorMsg);
+                    }
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
         }
 
         if (!state.valid) {

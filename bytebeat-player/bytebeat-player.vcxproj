@@ -157,10 +157,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Desktop\temp\temp\extras\IconsFontAwesome6.h" />
-    <ClInclude Include="..\..\Desktop\temp\temp\font_data_2.h" />
     <ClInclude Include="AudioSystem.h" />
     <ClInclude Include="Bytebeat.h" />
-    <ClInclude Include="font_data.h" />
     <ClInclude Include="GlobalState.h" />
     <ClInclude Include="icon_data.h" />
     <ClInclude Include="Presets.h" />
