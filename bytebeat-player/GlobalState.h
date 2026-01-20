@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <string>
 #include "Bytebeat.h"
 #include "TextEditor.h"
@@ -9,6 +9,22 @@ struct AppState {
     ComplexEngine complexEngine;
     enum class BytebeatMode { C_Compatible, JS_Compatible };
     BytebeatMode currentMode = BytebeatMode::C_Compatible;
+
+    // FAST ACCESS SYSTEM
+    std::vector<double> vmMemory;
+    std::map<std::string, int> varTable;
+
+    // Allocate index for variable
+    int getVarId(const std::string& name) {
+        if (varTable.find(name) == varTable.end()) {
+            int id = (int)vmMemory.size();
+            varTable[name] = id;
+            vmMemory.push_back(0.0);
+            return id;
+        }
+        return varTable[name];
+    }
+
     std::map<std::string, double> jsVars;
     TextEditor editor;
     bool playing = false;

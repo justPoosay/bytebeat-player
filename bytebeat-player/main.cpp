@@ -47,12 +47,14 @@ int main() {
     SetAudioStreamCallback(stream, MyAudioCallback);
     PlayAudioStream(stream);
 
-    // Initialize Editor
+    // Init Editor
     auto lang = TextEditor::LanguageDefinition::C();
     state.editor.SetLanguageDefinition(lang);
     state.editor.SetText(state.inputBuf);
 
+    // Init Compile
     state.valid = state.expr.Compile(state.inputBuf, state.errorMsg, state.errorPos);
+    UpdateErrorMarkers();
 
     rlImGuiSetup(true);
     ImGuiIO& io = ImGui::GetIO();
@@ -72,9 +74,22 @@ int main() {
         ClearBackground({ 15, 15, 20, 255 });
         rlImGuiBegin();
 
+        // LIVE COMPILATION
         if (state.editor.IsTextChanged()) {
-            if (state.currentMode == AppState::BytebeatMode::C_Compatible) state.valid = state.expr.Compile(state.editor.GetText(), state.errorMsg, state.errorPos);
-            else state.valid = state.complexEngine.Compile(state.editor.GetText(), state.errorMsg);
+            string code = state.editor.GetText();
+            // Copy to buffor
+            strncpy(state.inputBuf, code.c_str(), sizeof(state.inputBuf) - 1);
+
+            if (state.currentMode == AppState::BytebeatMode::C_Compatible) {
+                state.valid = state.expr.Compile(code, state.errorMsg, state.errorPos);
+            }
+            else {
+                // In JS mode ComplexEngine doesnt return errorPos (add later),
+                // for now errorPos set to -1
+                state.errorPos = -1;
+                state.valid = state.complexEngine.Compile(code, state.errorMsg);
+            }
+            UpdateErrorMarkers(); // Update red underlines
         }
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -133,30 +148,14 @@ int main() {
             for (int i = 0; i < 2; i++) {
                 bool isSelected = (currentModeIdx == i);
                 if (ImGui::Selectable(modeNames[i], isSelected)) {
-                    // Zmiana trybu
                     state.currentMode = (i == 0) ? AppState::BytebeatMode::C_Compatible : AppState::BytebeatMode::JS_Compatible;
 
-                    // Rekompilacja po zmianie silnika
-                    if (state.currentMode == AppState::BytebeatMode::C_Compatible) {
-                        state.valid = state.expr.Compile(state.editor.GetText(), state.errorMsg, state.errorPos);
-                    }
-                    else {
-                        state.valid = state.complexEngine.Compile(state.editor.GetText(), state.errorMsg);
-                    }
+                    // Force recompilation to update errors
+                    state.editor.SetText(state.editor.GetText());
                 }
-                if (isSelected) {
-                    ImGui::SetItemDefaultFocus();
-                }
+                if (isSelected) ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
-        }
-
-        if (!state.valid) {
-            string errStr = "Error: " + state.errorMsg + " (pos: " + to_string(state.errorPos) + ")";
-            float errWidth = ImGui::CalcTextSize(errStr.c_str()).x;
-            float targetPosX = ImGui::GetContentRegionMax().x - errWidth - ImGui::GetStyle().WindowPadding.x;
-            ImGui::SameLine(targetPosX);
-            ImGui::TextColored({ 1,0,0,1 }, "%s", errStr.c_str());
         }
         ImGui::End();
 
@@ -212,10 +211,13 @@ int main() {
                 if (ImGui::Selectable(preset.code.c_str(), false)) {
                     strncpy(state.inputBuf, preset.code.c_str(), sizeof(state.inputBuf) - 1);
                     state.inputBuf[sizeof(state.inputBuf) - 1] = '\0';
-                    state.valid = state.expr.Compile(state.inputBuf, state.errorMsg, state.errorPos);
+                    state.editor.SetText(preset.code); // This triggers IsTextChanged next frame
+
                     state.t = 0;
                     state.tAccum = 0.0;
+                    state.playing = true;
 
+                    // Auto-select sample rate
                     bool found = false;
                     for (int i = 0; i < 7; i++) {
                         if (state.rates[i] == preset.sampleRate) {
@@ -225,12 +227,9 @@ int main() {
                         }
                     }
                     if (!found) state.rateIdx = 0;
-
-                    state.editor.SetText(preset.code);
-                    state.playing = true;
                 }
 
-                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Click to load this formula");
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Click to load preset");
                 ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
                 ImGui::PopID();
             }
@@ -244,35 +243,43 @@ int main() {
         ImVec2 sz = ImGui::GetContentRegionAvail();
         ImDrawList* dl = ImGui::GetWindowDrawList();
 
-        dl->AddRectFilled(p, { p.x + sz.x, p.y + sz.y }, IM_COL32(10, 10, 15, 255));
-        dl->AddLine({ p.x, p.y + sz.y / 2 }, { p.x + sz.x, p.y + sz.y / 2 }, IM_COL32(100, 100, 120, 255), 1.0f);
+        if (!state.valid) {
+            std::string msg = state.errorMsg.empty() ? "Unknown Error" : state.errorMsg;
+            std::string fullError = "ERROR: " + msg;
 
-        uint32_t triggeredT = FindTrigger(state.t);
-        float numSamples = 512.0f * state.zoomFactors[state.zoomIdx];
+            // Center text
+            ImVec2 textSize = ImGui::CalcTextSize(fullError.c_str());
+            ImVec2 textPos = ImVec2(p.x + (sz.x - textSize.x) / 2, p.y + (sz.y - textSize.y) / 2);
 
-        for (int n = 0; n < 255; n++) {
-            float tIdx1 = ((float)n / 256.0f) * numSamples;
-            float tIdx2 = ((float)(n + 1) / 256.0f) * numSamples;
+            dl->AddText(textPos, IM_COL32(255, 80, 80, 255), fullError.c_str());
+        }
+        else {
+            dl->AddRectFilled(p, { p.x + sz.x, p.y + sz.y }, IM_COL32(10, 10, 15, 255));
+            dl->AddLine({ p.x, p.y + sz.y / 2 }, { p.x + sz.x, p.y + sz.y / 2 }, IM_COL32(100, 100, 120, 255), 1.0f);
 
-            int v1, v2;
-            if (state.currentMode == AppState::BytebeatMode::C_Compatible) {
-                v1 = state.expr.Eval(triggeredT + (uint32_t)tIdx1);
-                v2 = state.expr.Eval(triggeredT + (uint32_t)tIdx2);
+            uint32_t triggeredT = FindTrigger(state.t);
+            float numSamples = 512.0f * state.zoomFactors[state.zoomIdx];
+
+            // Cache variables for loop performance
+            const auto& expr = state.expr;
+            auto& cxEngine = state.complexEngine;
+            bool isJS = (state.currentMode == AppState::BytebeatMode::JS_Compatible);
+
+            for (int n = 0; n < 255; n++) {
+                float tIdx1 = ((float)n / 256.0f) * numSamples;
+                float tIdx2 = ((float)(n + 1) / 256.0f) * numSamples;
+
+                // Optimized call
+                int v1 = isJS ? cxEngine.Eval(triggeredT + (uint32_t)tIdx1) : expr.Eval(triggeredT + (uint32_t)tIdx1);
+                int v2 = isJS ? cxEngine.Eval(triggeredT + (uint32_t)tIdx2) : expr.Eval(triggeredT + (uint32_t)tIdx2);
+
+                float x1 = p.x + (float)n / 256.0f * sz.x;
+                float y1 = p.y + sz.y - (((v1 & 0xFF) / 255.0f) * sz.y);
+                float x2 = p.x + (float)(n + 1) / 256.0f * sz.x;
+                float y2 = p.y + sz.y - (((v2 & 0xFF) / 255.0f) * sz.y);
+
+                dl->AddLine({ x1, y1 }, { x2, y2 }, ImColor::HSV(n / 256.0f, 0.8f, 1.0f), 2.5f);
             }
-            else if (state.currentMode == AppState::BytebeatMode::JS_Compatible) {
-                v1 = state.complexEngine.Eval(triggeredT + (uint32_t)tIdx1);
-                v2 = state.complexEngine.Eval(triggeredT + (uint32_t)tIdx2);
-            }
-
-            float sample1 = ((v1 & 0xFF) / 255.0f);
-            float sample2 = ((v2 & 0xFF) / 255.0f);
-
-            float x1 = p.x + (float)n / 256.0f * sz.x;
-            float y1 = p.y + sz.y - (sample1 * sz.y);
-            float x2 = p.x + (float)(n + 1) / 256.0f * sz.x;
-            float y2 = p.y + sz.y - (sample2 * sz.y);
-
-            dl->AddLine({ x1, y1 }, { x2, y2 }, ImColor::HSV(n / 256.0f, 0.8f, 1.0f), 2.5f);
         }
         ImGui::End();
 

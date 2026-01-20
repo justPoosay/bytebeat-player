@@ -1,6 +1,7 @@
-#pragma once
+﻿#pragma once
 #include <cstdint>
 
 void ApplyTheme(int themeIdx);
+void UpdateErrorMarkers();
 void ExportToWav();
 uint32_t FindTrigger(uint32_t currentT);

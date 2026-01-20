@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -6,23 +6,26 @@
 
 enum class TokType { Number, VarT, Op, LParen, RParen, Fun, Quest, Colon, Identifier };
 enum class OpType { Add, Sub, Mul, Div, Mod, And, Or, Xor, Shl, Shr, Neg, BitNot, LT, GT, LE, GE, EQ, NE, Ternary, Assign, Coma };
-enum class FunType { Sin, Cos, Abs, Floor, Int };
+enum class FunType { Sin, Cos, Abs, Floor };
 
 struct Token {
     TokType type;
-    double value;
-    OpType op;
-    FunType fun;
-    int pos;
-    std::string name;
+    double value = 0.0;
+    OpType op = OpType::Add; // Default value
+    FunType fun = FunType::Sin; // Default value
+    int pos = -1;
 
-    static Token number(double v, int p);
-    static Token varT(int p);
-    static Token ident(std::string n, int p);
-    static Token makeOp(OpType o, int p);
-    static Token makeFun(FunType f, int p);
-    static Token lparen(int p);
-    static Token rparen(int p);
+    int index = -1;
+
+    // Constructors
+    Token() = default;
+    Token(double v, int p) : type(TokType::Number), value(v), pos(p) {}
+    Token(OpType o, int p) : type(TokType::Op), op(o), pos(p) {}
+    Token(FunType f, int p) : type(TokType::Fun), fun(f), pos(p) {}
+
+    // Constructors for variables
+    Token(int idx, int p) : type(TokType::Identifier), index(idx), pos(p) {}
+    Token(TokType t, int p) : type(t), pos(p) {}
 };
 
 class BytebeatExpression {
@@ -38,7 +41,7 @@ public:
     struct Instruction {
         enum class Type { AssignVar, EvalExpr };
         Type type;
-        std::string varName;
+        int targetVarIdx = -1;
         BytebeatExpression expr;
     };
 

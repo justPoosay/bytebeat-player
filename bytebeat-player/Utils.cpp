@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+﻿#define _CRT_SECURE_NO_WARNINGS
 #include "Utils.h"
 #include "GlobalState.h"
 #include "imgui.h"
@@ -41,6 +41,20 @@ void ApplyTheme(int themeIdx) {
     style.WindowRounding = 8.0f;
     style.FrameRounding = 5.0f;
     style.GrabRounding = 5.0f;
+}
+
+void UpdateErrorMarkers() {
+    TextEditor::ErrorMarkers markers;
+    if (!state.valid && state.errorPos >= 0 && !state.errorMsg.empty()) {
+        // Calculate line number based on errorPos
+        int line = 1;
+        std::string code = state.editor.GetText();
+        for (int i = 0; i < state.errorPos && i < (int)code.size(); i++) {
+            if (code[i] == '\n') line++;
+        }
+        markers[line] = state.errorMsg;
+    }
+    state.editor.SetErrorMarkers(markers);
 }
 
 void ExportToWav() {
