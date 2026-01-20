@@ -5,97 +5,148 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Pliki nagłówkowe">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Core">
+      <UniqueIdentifier>{11697b85-3790-47d1-973c-8ab9e6c9523e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Pliki zasobów">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{8d17606f-1a44-4d37-8159-b6e444ccba91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{712e12cd-1ae0-4e14-add3-2dd8badcbcf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor">
+      <UniqueIdentifier>{d0e34ce4-4b55-4234-968f-412c1df76391}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\raylib">
+      <UniqueIdentifier>{8966a79a-0313-42fa-a6a8-945359261b92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\ImGui">
+      <UniqueIdentifier>{8abb07c0-5f38-41d0-9624-eb4a6e62f744}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\rlImGui">
+      <UniqueIdentifier>{b2533821-6376-4271-ac6c-5b97922fe859}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\TextEditor">
+      <UniqueIdentifier>{7eacbc4d-3e74-453b-ba6f-d2927f0acf3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\rlImGui\extras">
+      <UniqueIdentifier>{b0eec00e-440c-4b09-9044-3b93ed49b134}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="imgui.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Core\AudioSystem.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="imgui_draw.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Core\Bytebeat.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="imgui_tables.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Core\GlobalState.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="imgui_widgets.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Core\Presets.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="rlImGui.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Utils\Utils.cpp">
+      <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="TextEditor.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Vendor\ImGui\imgui.cpp">
+      <Filter>Vendor\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Bytebeat.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Vendor\ImGui\imgui_draw.cpp">
+      <Filter>Vendor\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="GlobalState.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Vendor\ImGui\imgui_tables.cpp">
+      <Filter>Vendor\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="AudioSystem.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Vendor\ImGui\imgui_widgets.cpp">
+      <Filter>Vendor\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Presets.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Vendor\TextEditor\TextEditor.cpp">
+      <Filter>Vendor\TextEditor</Filter>
     </ClCompile>
-    <ClCompile Include="Utils.cpp">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="Vendor\rlImGui\rlImGui.cpp">
+      <Filter>Vendor\rlImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="icon_data.h">
-      <Filter>Pliki nagłówkowe</Filter>
+    <ClInclude Include="Core\AudioSystem.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Bytebeat.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GlobalState.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Presets.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\icon_data.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\ImGui\imconfig.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\ImGui\imgui.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\ImGui\imgui_impl_raylib.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\ImGui\imgui_internal.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\ImGui\imstb_rectpack.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\ImGui\imstb_textedit.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\ImGui\imstb_truetype.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\TextEditor\TextEditor.h">
+      <Filter>Vendor\TextEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\rlImGui\rlImGui.h">
+      <Filter>Vendor\rlImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\rlImGui\extras\FA6FreeSolidFontData.h">
+      <Filter>Vendor\rlImGui\extras</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\rlImGui\extras\IconsFontAwesome6.h">
+      <Filter>Vendor\rlImGui\extras</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\raylib\include\pl_mpeg.h">
+      <Filter>Vendor\raylib</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\raylib\include\raylib.h">
+      <Filter>Vendor\raylib</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\raylib\include\raymath.h">
+      <Filter>Vendor\raylib</Filter>
+    </ClInclude>
+    <ClInclude Include="Vendor\raylib\include\rlgl.h">
+      <Filter>Vendor\raylib</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Desktop\temp\temp\extras\IconsFontAwesome6.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
-    <ClInclude Include="Bytebeat.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
-    <ClInclude Include="GlobalState.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
-    <ClInclude Include="Presets.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioSystem.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.h">
-      <Filter>Pliki nagłówkowe</Filter>
+      <Filter>Resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon_256.png">
-      <Filter>Pliki zasobów</Filter>
+    <Image Include="Resources\icon.ico">
+      <Filter>Resources</Filter>
     </Image>
-    <Image Include="icon_64.png">
-      <Filter>Pliki zasobów</Filter>
-    </Image>
-    <Image Include="icon.ico">
-      <Filter>Pliki zasobów</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="SF-Pro-Rounded-Medium.otf" />
-    <Font Include="SpaceMono-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="bytebeat-player.rc">
-      <Filter>Pliki zasobów</Filter>
+      <Filter>Resources</Filter>
     </ResourceCompile>
   </ItemGroup>
 </Project>

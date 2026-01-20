@@ -76,13 +76,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)raylib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Vendor\raylib\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -93,15 +95,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)raylib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Vendor\raylib\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -110,16 +113,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)raylib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(PROJECTDIR)raylib\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);raylib.lib;winmm.lib;gdi32.lib;opengl32.lib;user32.lib;shell32.lib</AdditionalDependencies>
-      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
-      <OptimizeReferences>false</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(ProjectDir)Vendor\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -130,49 +133,58 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)raylib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\OscarStaniszewski\raylib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Vendor\raylib\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AudioSystem.cpp" />
-    <ClCompile Include="Bytebeat.cpp" />
-    <ClCompile Include="GlobalState.cpp" />
-    <ClCompile Include="imgui.cpp" />
-    <ClCompile Include="imgui_draw.cpp" />
-    <ClCompile Include="imgui_tables.cpp" />
-    <ClCompile Include="imgui_widgets.cpp" />
+    <ClCompile Include="Core\AudioSystem.cpp" />
+    <ClCompile Include="Core\Bytebeat.cpp" />
+    <ClCompile Include="Core\GlobalState.cpp" />
+    <ClCompile Include="Core\Presets.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Presets.cpp" />
-    <ClCompile Include="rlImGui.cpp" />
-    <ClCompile Include="TextEditor.cpp" />
-    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Utils\Utils.cpp" />
+    <ClCompile Include="Vendor\ImGui\imgui.cpp" />
+    <ClCompile Include="Vendor\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="Vendor\ImGui\imgui_tables.cpp" />
+    <ClCompile Include="Vendor\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="Vendor\rlImGui\rlImGui.cpp" />
+    <ClCompile Include="Vendor\TextEditor\TextEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Desktop\temp\temp\extras\IconsFontAwesome6.h" />
-    <ClInclude Include="AudioSystem.h" />
-    <ClInclude Include="Bytebeat.h" />
-    <ClInclude Include="GlobalState.h" />
-    <ClInclude Include="icon_data.h" />
-    <ClInclude Include="Presets.h" />
+    <ClInclude Include="Core\AudioSystem.h" />
+    <ClInclude Include="Core\Bytebeat.h" />
+    <ClInclude Include="Core\GlobalState.h" />
+    <ClInclude Include="Core\Presets.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="Utils.h" />
+    <ClInclude Include="Resources\icon_data.h" />
+    <ClInclude Include="Utils\Utils.h" />
+    <ClInclude Include="Vendor\ImGui\imconfig.h" />
+    <ClInclude Include="Vendor\ImGui\imgui.h" />
+    <ClInclude Include="Vendor\ImGui\imgui_impl_raylib.h" />
+    <ClInclude Include="Vendor\ImGui\imgui_internal.h" />
+    <ClInclude Include="Vendor\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="Vendor\ImGui\imstb_textedit.h" />
+    <ClInclude Include="Vendor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="Vendor\raylib\include\pl_mpeg.h" />
+    <ClInclude Include="Vendor\raylib\include\raylib.h" />
+    <ClInclude Include="Vendor\raylib\include\raymath.h" />
+    <ClInclude Include="Vendor\raylib\include\rlgl.h" />
+    <ClInclude Include="Vendor\rlImGui\extras\FA6FreeSolidFontData.h" />
+    <ClInclude Include="Vendor\rlImGui\extras\IconsFontAwesome6.h" />
+    <ClInclude Include="Vendor\rlImGui\rlImGui.h" />
+    <ClInclude Include="Vendor\TextEditor\TextEditor.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon.ico" />
-    <Image Include="icon_256.png" />
-    <Image Include="icon_64.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="SF-Pro-Rounded-Medium.otf" />
-    <Font Include="SpaceMono-Regular.ttf" />
+    <Image Include="Resources\icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="bytebeat-player.rc" />

@@ -49,6 +49,23 @@ int main() {
 
     // Init Editor
     auto lang = TextEditor::LanguageDefinition::C();
+
+    static const char* const keywords[] = {
+        "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
+        "sinh", "cosh", "tanh", "exp", "log", "log10", "pow",
+        "sqrt", "ceil", "floor", "fmod", "round"
+    };
+
+    for (auto& k : keywords) {
+        TextEditor::Identifier id;
+        id.mDeclaration = "Built-in function"; // To tekst, który pojawi się w tooltipie
+        lang.mIdentifiers.insert(std::make_pair(std::string(k), id));
+    }
+
+    // Możemy też dodać zmienną 't', żeby była ładnie opisana
+    TextEditor::Identifier idT;
+    idT.mDeclaration = "Time variable (counter)";
+    lang.mIdentifiers.insert(std::make_pair("t", idT));
     state.editor.SetLanguageDefinition(lang);
     state.editor.SetText(state.inputBuf);
 
