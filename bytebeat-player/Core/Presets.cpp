@@ -9,6 +9,7 @@ vector<BytebeatPreset> g_presets = {
     {"Neurofunk", "t*((t&4096?t%65536<59392?7:t&7:16)+(1&t>>14))>>(3&-t>>(t&2048?2:10))|t>>(t&16384?t&4096?10:3:2)"},
     {"Explosions", "(t>>2)*(t>>5)|t>>5"},
     {"Siren", "(t*5&t>>7)|(t*3&t>>10)"},
+    {"Weird transition thing", "(t^t*1.01),t&t>>4&32"},
     {"Minimal sierpinsky", "t&t>>8"},
     {"Sierpinsky harmony", "5*t&t>>7|3*t&4*t>>10"},
     {"Remix of Lost in Space", "(t>>7|t|t>>6)*10+4*(t&t>>13|t>>6)"},
@@ -21,5 +22,6 @@ vector<BytebeatPreset> g_presets = {
    
     // Waves
     {"Triangle waves", "(t<<4)^-(t>>4&1)"},
-    {"Sine waves", "(t&15)*(-t&15)*(((t&16)/8)-1)*128/65+128"}
+    {"Sine waves", "(t&15)*(-t&15)*(((t&16)/8)-1)*128/65+128"},
+    {"charCodeAt wavetable synth", "'üöä§$$$$'.charCodeAt(3*t>>6&7)", 44100}
 };

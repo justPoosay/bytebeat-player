@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <map>
 
-enum class TokType { Number, VarT, Op, LParen, RParen, Fun, Quest, Colon, Identifier };
-enum class OpType { Add, Sub, Mul, Div, Mod, And, Or, Xor, Shl, Shr, Neg, BitNot, LT, GT, LE, GE, EQ, NE, Ternary, Assign, Coma };
+enum class TokType { Number, VarT, Op, LParen, RParen, Fun, Quest, Colon, Identifier, String, ArrayLiteral };
+enum class OpType { Add, Sub, Mul, Div, Mod, And, Or, Xor, Shl, Shr, Neg, BitNot, LT, GT, LE, GE, EQ, NE, Ternary, Assign, Coma, CharCodeAt, Index };
 enum class FunType { Sin, Cos, Abs, Floor };
 
 struct Token {
@@ -34,6 +34,8 @@ public:
     int Eval(uint32_t t) const;
 private:
     std::vector<Token> m_rpn;
+    std::vector<std::string> m_strings;
+    std::vector<std::vector<double>> m_arrays;
 };
 
 class ComplexEngine {

@@ -32,7 +32,7 @@ using namespace std;
 
 int main() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(1280, 720, "Bytebeat Composer Pro - Modular");
+    InitWindow(1280, 720, "Bytebeat Composer C++");
     SetTargetFPS(144);
     InitAudioDevice();
 
@@ -58,11 +58,10 @@ int main() {
 
     for (auto& k : keywords) {
         TextEditor::Identifier id;
-        id.mDeclaration = "Built-in function"; // To tekst, który pojawi się w tooltipie
+        id.mDeclaration = "Built-in function";
         lang.mIdentifiers.insert(std::make_pair(std::string(k), id));
     }
 
-    // Możemy też dodać zmienną 't', żeby była ładnie opisana
     TextEditor::Identifier idT;
     idT.mDeclaration = "Time variable (counter)";
     lang.mIdentifiers.insert(std::make_pair("t", idT));

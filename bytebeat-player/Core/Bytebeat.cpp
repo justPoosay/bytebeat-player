@@ -9,8 +9,14 @@
 
 using namespace std;
 
+// const to differenciate Array ID from String ID
+// Strings have ID 0..199999, Arrays have 200000+
+static const int ARRAY_ID_OFFSET = 200000;
+
 static int getPrecedence(OpType op) {
     switch (op) {
+    case OpType::Index: return 13;
+    case OpType::CharCodeAt: return 12;
     case OpType::Mul: case OpType::Div: case OpType::Mod: return 10;
     case OpType::Add: case OpType::Sub: return 9;
     case OpType::Shl: case OpType::Shr: return 8;
@@ -74,32 +80,96 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
             }
             expectUnary = false;
         }
+        else if (expr[i] == '\'' || expr[i] == '"') {
+            char quote = expr[i++];
+            string s;
+            while (i < expr.size() && expr[i] != quote) s += expr[i++];
+            if (i < expr.size()) i++;
+
+            m_strings.push_back(s);
+            Token t(TokType::String, start);
+            t.index = (int)m_strings.size() - 1;
+            tokens.push_back(t);
+
+            expectUnary = false;
+        }
+        else if (expr[i] == '[') {
+            if (expectUnary) {
+                i++;
+                vector<double> arr;
+                while (i < expr.size() && expr[i] != ']') {
+                    if (isspace(expr[i]) || expr[i] == ',') { i++; continue; }
+                    if (isdigit(expr[i]) || expr[i] == '-' || expr[i] == '.') {
+                        size_t nextIdx;
+                        try {
+                            double val = stod(expr.substr(i), &nextIdx);
+                            arr.push_back(val);
+                            i += nextIdx;
+                        }
+                        catch (...) { i++; }
+                    }
+                    else i++;
+                }
+                if (i < expr.size()) i++;
+
+                m_arrays.push_back(arr);
+                Token t(TokType::ArrayLiteral, start);
+                // offset for Eval to differenciate array (200000) from string (0)
+                t.index = (int)m_arrays.size() - 1 + ARRAY_ID_OFFSET;
+                tokens.push_back(t);
+                expectUnary = false;
+            }
+            else {
+                tokens.emplace_back(OpType::Index, start);
+                tokens.emplace_back(TokType::LParen, start);
+                i++;
+                expectUnary = true;
+            }
+        }
+        else if (expr[i] == ']') {
+            tokens.emplace_back(TokType::RParen, start);
+            i++;
+            expectUnary = false;
+        }
         else if (expr[i] == '(') { tokens.emplace_back(TokType::LParen, start); i++; expectUnary = true; }
         else if (expr[i] == ')') { tokens.emplace_back(TokType::RParen, start); i++; expectUnary = false; }
         else if (expr[i] == '?') { tokens.emplace_back(TokType::Quest, start); i++; expectUnary = true; }
         else if (expr[i] == ':') { tokens.emplace_back(TokType::Colon, start); i++; expectUnary = true; }
         else if (expr[i] == '~') { tokens.emplace_back(OpType::BitNot, start); i++; expectUnary = true; }
         else {
-            OpType ot;
-            if ((expr[i] == '-' || expr[i] == '!') && expectUnary) { tokens.emplace_back(expr[i] == '-' ? OpType::Neg : OpType::BitNot, start); i++; }
-            else {
-                OpType ot = OpType::Add;
-                bool found = false;
-                if (i + 1 < expr.size()) {
-                    string two = expr.substr(i, 2);
-                    if (doubleOps.count(two)) { ot = doubleOps.at(two); i += 2; found = true; }
-                }
-                if (!found) {
-                    if (singleOps.count(expr[i])) { ot = singleOps.at(expr[i]); i++; }
-                    else { error = "Unexpected token: '" + string(1, expr[i]) + "'"; errorPos = start; return false; }
-                }
-                tokens.emplace_back(ot, start);
+            if (expr[i] == '.' && (i + 10 < expr.size()) && expr.substr(i, 11) == ".charCodeAt") {
+                tokens.emplace_back(OpType::CharCodeAt, start);
+                i += 11;
                 expectUnary = true;
+                continue;
+            }
+
+            if ((expr[i] == '-' || expr[i] == '!') && expectUnary) {
+                tokens.emplace_back(expr[i] == '-' ? OpType::Neg : OpType::BitNot, start);
+                i++;
+            }
+            else {
+                OpType ot;
+                if ((expr[i] == '-' || expr[i] == '!') && expectUnary) { tokens.emplace_back(expr[i] == '-' ? OpType::Neg : OpType::BitNot, start); i++; }
+                else {
+                    OpType ot = OpType::Add;
+                    bool found = false;
+                    if (i + 1 < expr.size()) {
+                        string two = expr.substr(i, 2);
+                        if (doubleOps.count(two)) { ot = doubleOps.at(two); i += 2; found = true; }
+                    }
+                    if (!found) {
+                        if (singleOps.count(expr[i])) { ot = singleOps.at(expr[i]); i++; }
+                        else { error = "Unexpected token: '" + string(1, expr[i]) + "'"; errorPos = start; return false; }
+                    }
+                    tokens.emplace_back(ot, start);
+                    expectUnary = true;
+                }
             }
         }
     }
 
-    // Shunting-yard Algorithm (conversion to RPN)
+    // Shunting-yard Algorithm
     for (const auto& t : tokens) {
         if (t.type == TokType::Number || t.type == TokType::VarT || t.type == TokType::Identifier) {
             m_rpn.push_back(t);
@@ -124,8 +194,8 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                 errorPos = t.pos;
                 return false;
             }
-            if (!stack.empty() && stack.back().type == TokType::Fun) {
-                m_rpn.push_back(stack.back()); 
+            if (!stack.empty() && (stack.back().type == TokType::Fun || (stack.back().type == TokType::Op && stack.back().op == OpType::Index))) {
+                m_rpn.push_back(stack.back());
                 stack.pop_back();
             }
         }
@@ -184,6 +254,10 @@ int BytebeatExpression::Eval(uint32_t t) const {
             stack[++sp] = memory[tok.index];
             break;
         }
+        case TokType::String: {
+            stack[++sp] = (double)tok.index;
+            break;
+        }
         case TokType::Fun:
             if (sp >= 0) {
                 double& v = stack[sp];
@@ -205,6 +279,38 @@ int BytebeatExpression::Eval(uint32_t t) const {
         default:
             if (tok.op == OpType::Neg) { if (sp >= 0) stack[sp] = -stack[sp]; }
             else if (tok.op == OpType::BitNot) { if (sp >= 0) stack[sp] = (double)(~(int64_t)stack[sp]); }
+            else if (tok.op == OpType::Index || tok.op == OpType::CharCodeAt) {
+                if (sp >= 1) {
+                    double idxVal = stack[sp--];
+                    double targetId = stack[sp];
+
+                    int tId = (int)targetId;
+
+                    // if Array (ID >= 200000)
+                    if (tId >= ARRAY_ID_OFFSET) {
+                        int arrIndex = tId - ARRAY_ID_OFFSET;
+                        if (arrIndex >= 0 && arrIndex < m_arrays.size()) {
+                            const vector<double>& arr = m_arrays[arrIndex];
+                            int i = (int)idxVal;
+                            // Secure range (returns 0 if out of range)
+                            if (i >= 0 && i < arr.size()) stack[sp] = arr[i];
+                            else stack[sp] = 0;
+                        }
+                        else stack[sp] = 0;
+                    }
+                    // else String (ID < 200000)
+                    else {
+                        if (tId >= 0 && tId < m_strings.size()) {
+                            const string& s = m_strings[tId];
+                            int i = (int)idxVal;
+                            if (i >= 0 && i < s.size()) stack[sp] = (double)s[i];
+                            else stack[sp] = 0;
+                        }
+                        else stack[sp] = 0; 
+                    }
+                }
+            }
+
             else if (sp >= 1) {
                 double b = stack[sp--];
                 double& a = stack[sp];
