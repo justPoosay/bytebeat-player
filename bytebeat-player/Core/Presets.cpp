@@ -3,6 +3,10 @@
 using namespace std;
 
 vector<BytebeatPreset> g_presets = {
+    // Temp: my songs
+    {"Haschenparty Supersaw", "(c='N.N.U.UK.KP.K.P.M.M.T.TR.RY.R.Y.R.R.Z.ZP.PW.P.W.P.P.W.WR.RY.W.Y.N.N.U.UK.KP.K.P.M.M.T.TR.RY.R.Y.R.R.Z.ZP.PW.P.W.P.P.U.UP.PU.P.U.'.charCodeAt(t/945&127))>46?((t*6.25*pow(2,(c-65)/12)%255)+(t*6.32*pow(2,(c-65)/12)%255)+(t*6.18*pow(2,(c-65)/12)%255))*0.08:0"},
+    {"charCodeAt wavetable synth", "'üöä§$$$$'.charCodeAt(3*t>>6&7)", 44100},
+
     {"The 42 melody", "t*(42&t>>10)"},
     {"Space Engine", "t*((t>>12|t>>8)&63&t>>4)"},
     {"Remix of Meowing Cat", "t*((t/2>>10|t%16*t>>8)&8*t>>12&18)|-(t/16)+64"},
@@ -23,5 +27,4 @@ vector<BytebeatPreset> g_presets = {
     // Waves
     {"Triangle waves", "(t<<4)^-(t>>4&1)"},
     {"Sine waves", "(t&15)*(-t&15)*(((t&16)/8)-1)*128/65+128"},
-    {"charCodeAt wavetable synth", "'üöä§$$$$'.charCodeAt(3*t>>6&7)", 44100}
 };

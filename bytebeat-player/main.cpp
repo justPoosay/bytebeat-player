@@ -97,12 +97,8 @@ int main() {
             strncpy(state.inputBuf, code.c_str(), sizeof(state.inputBuf) - 1);
 
             if (state.currentMode == AppState::BytebeatMode::C_Compatible) state.valid = state.expr.Compile(code, state.errorMsg, state.errorPos);
-            else {
-                // In JS mode ComplexEngine doesnt return errorPos (add later),
-                // for now errorPos set to -1
-                state.errorPos = -1;
-                state.valid = state.complexEngine.Compile(code, state.errorMsg);
-            }
+            else state.valid = state.complexEngine.Compile(code, state.errorMsg, state.errorPos); // Return errorPos
+
             UpdateErrorMarkers(); // Update red underlines
         }
 
@@ -166,8 +162,20 @@ int main() {
                 if (ImGui::Selectable(modeNames[i], isSelected)) {
                     state.currentMode = (i == 0) ? AppState::BytebeatMode::C_Compatible : AppState::BytebeatMode::JS_Compatible;
 
-                    // Force recompilation to update errors
-                    state.editor.SetText(state.editor.GetText());
+                    // Reset timer
+                    state.t = 0;
+                    state.tAccum = 0.0;
+
+                    // Force recompilation immediately
+                    string code = state.editor.GetText();
+
+                    strncpy(state.inputBuf, code.c_str(), sizeof(state.inputBuf) - 1);
+                    state.inputBuf[sizeof(state.inputBuf) - 1] = '\0';
+
+                    if (state.currentMode == AppState::BytebeatMode::C_Compatible) state.valid = state.expr.Compile(code, state.errorMsg, state.errorPos);
+                    else state.valid = state.complexEngine.Compile(code, state.errorMsg, state.errorPos);
+                    
+                    UpdateErrorMarkers();
                 }
                 if (isSelected) ImGui::SetItemDefaultFocus();
             }
