@@ -51,9 +51,9 @@ int main() {
     auto lang = TextEditor::LanguageDefinition::C();
 
     static const char* const keywords[] = {
-        "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
-        "sinh", "cosh", "tanh", "exp", "log", "log10", "pow",
-        "sqrt", "ceil", "floor", "fmod", "round"
+        "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh", 
+        "exp", "log", "log10", "pow", "sqrt", 
+        "ceil", "floor", "fmod", "round"
     };
 
     for (auto& k : keywords) {
@@ -96,9 +96,7 @@ int main() {
             // Copy to buffor
             strncpy(state.inputBuf, code.c_str(), sizeof(state.inputBuf) - 1);
 
-            if (state.currentMode == AppState::BytebeatMode::C_Compatible) {
-                state.valid = state.expr.Compile(code, state.errorMsg, state.errorPos);
-            }
+            if (state.currentMode == AppState::BytebeatMode::C_Compatible) state.valid = state.expr.Compile(code, state.errorMsg, state.errorPos);
             else {
                 // In JS mode ComplexEngine doesnt return errorPos (add later),
                 // for now errorPos set to -1
@@ -146,15 +144,17 @@ int main() {
 
         if (ImGui::Button(state.playing ? "STOP" : "PLAY", ImVec2(100, 40))) state.playing = !state.playing;
         ImGui::SameLine();
-        if (ImGui::Button("Reset", ImVec2(100, 40))) { state.t = 0; state.tAccum = 0.0; }
+        if (ImGui::Button("Reset", ImVec2(100, 40))) { 
+            state.t = 0; 
+            state.tAccum = 0.0; 
+        }
         ImGui::SameLine();
 
         char zoomBuf[32];
         if (state.zoomIdx == 0) sprintf(zoomBuf, "1x");
         else sprintf(zoomBuf, "1/%dx", (int)state.zoomFactors[state.zoomIdx]);
-        if (ImGui::Button(zoomBuf, ImVec2(60, 40))) {
-            state.zoomIdx = (state.zoomIdx + 1) % 4;
-        }
+
+        if (ImGui::Button(zoomBuf, ImVec2(60, 40))) state.zoomIdx = (state.zoomIdx + 1) % 4;
         ImGui::SameLine();
 
         const char* modeNames[] = { "Classic (C)", "Javascript (JS)" };
@@ -178,17 +178,18 @@ int main() {
         // --- SETTINGS WINDOW ---
         ImGui::Begin("Settings");
         ImGui::Text("UI Appearance");
-        if (ImGui::Combo("Theme", &currentThemeIdx, themeNames, 5)) {
-            ApplyTheme(currentThemeIdx);
-        }
+        if (ImGui::Combo("Theme", &currentThemeIdx, themeNames, 5)) ApplyTheme(currentThemeIdx);
 
-        ImGui::Separator(); ImGui::Spacing();
+        ImGui::Separator(); 
+        ImGui::Spacing();
 
         ImGui::Text("Audio Engine");
         ImGui::SliderFloat("Volume", &state.volume, 0.0f, 1.0f, "%.2f");
         ImGui::Combo("Sample Rate", &state.rateIdx, state.rateNames, 7);
 
-        ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+        ImGui::Spacing(); 
+        ImGui::Separator(); 
+        ImGui::Spacing();
 
         ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Playback Info");
         ImGui::Columns(2, "PlaybackLayout", false);
@@ -200,14 +201,9 @@ int main() {
         ImGui::NextColumn();
         float buttonWidth = ImGui::GetContentRegionAvail().x;
 
-        if (ImGui::Button("Copy Formula", ImVec2(buttonWidth, 0))) {
-            ImGui::SetClipboardText(state.editor.GetText().c_str());
-        }
-
+        if (ImGui::Button("Copy Formula", ImVec2(buttonWidth, 0))) ImGui::SetClipboardText(state.editor.GetText().c_str());
         if (!state.valid) ImGui::BeginDisabled();
-        if (ImGui::Button("Quick Export (30s)", ImVec2(buttonWidth, 0))) {
-            ExportToWav();
-        }
+        if (ImGui::Button("Quick Export (30s)", ImVec2(buttonWidth, 0))) ExportToWav();
         if (!state.valid) ImGui::EndDisabled();
 
         ImGui::Columns(1);
@@ -246,7 +242,10 @@ int main() {
                 }
 
                 if (ImGui::IsItemHovered()) ImGui::SetTooltip("Click to load preset");
-                ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+
+                ImGui::Spacing(); 
+                ImGui::Separator(); 
+                ImGui::Spacing();
                 ImGui::PopID();
             }
         }

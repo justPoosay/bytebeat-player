@@ -29,7 +29,9 @@ static int getPrecedence(OpType op) {
 }
 
 bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPos) {
-    error.clear(); errorPos = -1; m_rpn.clear();
+    error.clear();
+    errorPos = -1; 
+    m_rpn.clear();
     if (expr.empty()) return false;
 
     vector<Token> tokens;
@@ -37,20 +39,39 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
     bool expectUnary = true;
 
     static const unordered_map<string, FunType> funMap = {
-        {"sin", FunType::Sin}, {"cos", FunType::Cos}, {"abs", FunType::Abs}, {"floor", FunType::Floor}
+        {"sin", FunType::Sin}, 
+        {"cos", FunType::Cos}, 
+        {"abs", FunType::Abs}, 
+        {"floor", FunType::Floor}
     };
     static const unordered_map<string, OpType> doubleOps = {
-        {"<<", OpType::Shl}, {">>", OpType::Shr}, {"<=", OpType::LE},
-        {">=", OpType::GE}, {"==", OpType::EQ}, {"!=", OpType::NE}
+        {"<<", OpType::Shl}, 
+        {">>", OpType::Shr},
+        {"<=", OpType::LE},
+        {">=", OpType::GE}, 
+        {"==", OpType::EQ}, 
+        {"!=", OpType::NE}
     };
     static const unordered_map<char, OpType> singleOps = {
-        {'+', OpType::Add}, {'-', OpType::Sub}, {'*', OpType::Mul}, {'/', OpType::Div},
-        {'%', OpType::Mod}, {'&', OpType::And}, {'|', OpType::Or}, {'^', OpType::Xor},
-        {'<', OpType::LT}, {'>', OpType::GT}, {'=', OpType::Assign}, {',', OpType::Coma}
+        {'+', OpType::Add}, 
+        {'-', OpType::Sub},
+        {'*', OpType::Mul},
+        {'/', OpType::Div},
+        {'%', OpType::Mod},
+        {'&', OpType::And},
+        {'|', OpType::Or}, 
+        {'^', OpType::Xor},
+        {'<', OpType::LT},
+        {'>', OpType::GT},
+        {'=', OpType::Assign},
+        {',', OpType::Coma}
     };
 
     for (size_t i = 0; i < expr.size(); ) {
-        if (isspace(expr[i])) { i++; continue; }
+        if (isspace(expr[i])) { 
+            i++;
+            continue;
+        }
         int start = (int)i;
 
         if (isdigit(expr[i])) {
@@ -98,7 +119,10 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                 i++;
                 vector<double> arr;
                 while (i < expr.size() && expr[i] != ']') {
-                    if (isspace(expr[i]) || expr[i] == ',') { i++; continue; }
+                    if (isspace(expr[i]) || expr[i] == ',') {
+                        i++;
+                        continue;
+                    }
                     if (isdigit(expr[i]) || expr[i] == '-' || expr[i] == '.') {
                         size_t nextIdx;
                         try {
@@ -150,17 +174,31 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
             }
             else {
                 OpType ot;
-                if ((expr[i] == '-' || expr[i] == '!') && expectUnary) { tokens.emplace_back(expr[i] == '-' ? OpType::Neg : OpType::BitNot, start); i++; }
+                if ((expr[i] == '-' || expr[i] == '!') && expectUnary) { 
+                    tokens.emplace_back(expr[i] == '-' ? OpType::Neg : OpType::BitNot, start); 
+                    i++; 
+                }
                 else {
                     OpType ot = OpType::Add;
                     bool found = false;
                     if (i + 1 < expr.size()) {
                         string two = expr.substr(i, 2);
-                        if (doubleOps.count(two)) { ot = doubleOps.at(two); i += 2; found = true; }
+                        if (doubleOps.count(two)) { 
+                            ot = doubleOps.at(two); 
+                            i += 2;
+                            found = true;
+                        }
                     }
                     if (!found) {
-                        if (singleOps.count(expr[i])) { ot = singleOps.at(expr[i]); i++; }
-                        else { error = "Unexpected token: '" + string(1, expr[i]) + "'"; errorPos = start; return false; }
+                        if (singleOps.count(expr[i])) { 
+                            ot = singleOps.at(expr[i]);
+                            i++; 
+                        }
+                        else { 
+                            error = "Unexpected token: '" + string(1, expr[i]) + "'";
+                            errorPos = start; 
+                            return false;
+                        }
                     }
                     tokens.emplace_back(ot, start);
                     expectUnary = true;
