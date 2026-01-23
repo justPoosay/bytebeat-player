@@ -177,11 +177,9 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                         }
                         catch (...) { i++; }
                     }
-                    else { i++; }
+                    else i++;
                 }
-                if (i < expr.size()) {
-                    i++;
-                }
+                if (i < expr.size()) i++;
 
                 g_arrays.push_back(arr);
                 Token t(TokType::ArrayLiteral, start);
@@ -307,9 +305,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                         isArgSeparator = true;
                     }
                 }
-                if (!isArgSeparator) {
-                    stack.push_back(t);
-                }
+                if (!isArgSeparator) stack.push_back(t);
             }
             else {
                 int prec = (t.type == TokType::Quest || t.type == TokType::Colon) ? 2 :
@@ -319,9 +315,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                     int topPrec = (stack.back().type == TokType::Fun) ? 12 :
                         (stack.back().type == TokType::Op && (stack.back().op == OpType::Neg || stack.back().op == OpType::BitNot)) ? 12 :
                         getPrecedence(stack.back().op);
-                    if (topPrec < prec) {
-                        break;
-                    }
+                    if (topPrec < prec) break;
                     m_rpn.push_back(stack.back());
                     stack.pop_back();
                 }
@@ -350,9 +344,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
 int BytebeatExpression::Eval(uint32_t t) const {
     std::lock_guard<std::recursive_mutex> lock(g_bytebeatMutex);
 
-    if (m_rpn.empty()) {
-        return 0;
-    }
+    if (m_rpn.empty()) return 0;
     double stack[1024];
     int sp = -1;
 
@@ -360,25 +352,22 @@ int BytebeatExpression::Eval(uint32_t t) const {
     const std::vector<double>& memory = state.vmMemory;
 
     for (const auto& tok : m_rpn) {
-        if (sp >= 1023) {
-            break; // Security
-        }
+        if (sp >= 1023) break; // Security
 
         switch (tok.type) {
         case TokType::Number: stack[++sp] = tok.value; break;
         case TokType::VarT: stack[++sp] = (double)t; break;
-            // KEY OPTIMIZATION
-            // Replace searching string with getting index value
         case TokType::Identifier: stack[++sp] = memory[tok.index]; break;
         case TokType::String: stack[++sp] = (double)tok.index; break;
         case TokType::ArrayLiteral: stack[++sp] = (double)tok.index; break;
-        case TokType::VarPtr: stack[++sp] = (double)tok.index; break; // Throw variable ID to stack
-
+        case TokType::VarPtr: stack[++sp] = (double)tok.index; break; // Throw var ID to stack
         case TokType::Fun:
             if (sp >= 0) {
                 if (tok.fun == FunType::Pow) {
                     if (sp >= 1) {
-                        double v2 = stack[sp--]; double& v1 = stack[sp]; v1 = pow(v1, v2);
+                        double v2 = stack[sp--]; 
+                        double& v1 = stack[sp]; 
+                        v1 = pow(v1, v2);
                     }
                 }
                 else if (tok.fun == FunType::Tan) {
@@ -416,7 +405,6 @@ int BytebeatExpression::Eval(uint32_t t) const {
                     stack[sp] = (double)(~(int64_t)stack[sp]);
                 }
             }
-            // --- FIX: Assign to VarPtr ---
             else if (tok.op == OpType::Assign) {
                 if (sp >= 1) {
                     double val = stack[sp--];
@@ -555,57 +543,98 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
             if (c == '\\' && i + 1 < code.size()) {
                 currentSeg += code[++i];
             }
-            else if (c == quoteChar) inQuote = false;
+            else if (c == quoteChar) {
+                inQuote = false;
+            }
         }
         else {
-            if (c == '"' || c == '\'') { inQuote = true; quoteChar = c; currentSeg += c; }
-            else if (c == '(') { parenDepth++; currentSeg += c; }
-            else if (c == ')') { if (parenDepth > 0) parenDepth--; currentSeg += c; }
-            else if (c == '[') { bracketDepth++; currentSeg += c; }
-            else if (c == ']') { if (bracketDepth > 0) bracketDepth--; currentSeg += c; }
+            if (c == '"' || c == '\'') { 
+                inQuote = true; 
+                quoteChar = c; 
+                currentSeg += c; 
+            }
+            else if (c == '(') {
+                parenDepth++;
+                currentSeg += c;
+            }
+            else if (c == ')') {
+                if (parenDepth > 0) {
+                    parenDepth--;
+                }
+                currentSeg += c; 
+            }
+            else if (c == '[') {
+                bracketDepth++; 
+                currentSeg += c;
+            }
+            else if (c == ']') { 
+                if (bracketDepth > 0) {
+                    bracketDepth--;
+                }
+                currentSeg += c;
+            }
             else if (c == ',') {
                 if (parenDepth == 0 && bracketDepth == 0) {
-                    if (!currentSeg.empty()) segments.push_back({ currentSeg, currentSegStart });
+                    if (!currentSeg.empty()) {
+                        segments.push_back({ currentSeg, currentSegStart });
+                    }
                     currentSeg.clear();
                     currentSegStart = i + 1;
                 }
-                else currentSeg += c;
+                else { 
+                    currentSeg += c;
+                }
             }
-            else currentSeg += c;
+            else {
+                currentSeg += c;
+            }
         }
     }
-    if (!currentSeg.empty()) segments.push_back({ currentSeg, currentSegStart });
+    if (!currentSeg.empty()) {
+        segments.push_back({ currentSeg, currentSegStart });
+    }
 
     for (auto& segData : segments) {
         string& segment = segData.text;
         size_t segOffset = segData.offset;
 
-        if (segment.find_first_not_of(" \t\n\r") == string::npos) {
-            continue;
-        }
+        if (segment.find_first_not_of(" \t\n\r") == string::npos) continue;
         Instruction ins;
 
         // --- SMART ASSIGN DETECT: Ignore '=' inside () ---
         size_t assignPos = string::npos;
         bool isAssign = false;
 
-        int pDepth = 0; bool q = false; char qc = 0;
+        int pDepth = 0; 
+        bool q = false;
+        char qc = 0;
         for (size_t i = 0; i < segment.size(); ++i) {
             char c = segment[i];
             if (q) {
-                if (c == '\\' && i + 1 < segment.size()) i++;
-                else if (c == qc) q = false;
+                if (c == '\\' && i + 1 < segment.size()) { i++; }
+                else if (c == qc) { q = false; }
             }
             else {
-                if (c == '"' || c == '\'') { q = true; qc = c; }
+                if (c == '"' || c == '\'') { 
+                    q = true; 
+                    qc = c; 
+                }
                 else if (c == '(') pDepth++;
-                else if (c == ')') { if (pDepth > 0) pDepth--; }
+                else if (c == ')') { 
+                    if (pDepth > 0) {
+                        pDepth--;
+                    }
+                }
                 else if (c == '=') {
                     if (pDepth == 0) {
                         bool logic = false;
                         if (i > 0 && (segment[i - 1] == '!' || segment[i - 1] == '<' || segment[i - 1] == '>')) logic = true;
                         if (i + 1 < segment.size() && segment[i + 1] == '=') logic = true;
-                        if (!logic) { isAssign = true; assignPos = i; break; }
+                        if (!logic) { 
+                            isAssign = true; 
+                            assignPos = i;
+                            break; 
+                        }
                     }
                 }
             }
@@ -619,7 +648,7 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
 
             varName.erase(remove_if(varName.begin(), varName.end(), [](char c) {
                 return std::isspace(static_cast<unsigned char>(c));
-                }), varName.end());
+            }), varName.end());
 
             // Get index for allocated variable
             ins.targetVarIdx = state.getVarId(varName);
