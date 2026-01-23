@@ -73,7 +73,23 @@ int main() {
     UpdateErrorMarkers();
 
     rlImGuiSetup(true);
+
+    // --- POCZĄTEK MODYFIKACJI ---
     ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->Clear(); // Usuwamy domyślną czcionkę bitmapową
+
+    // Definiujemy zakres znaków do załadowania:
+    // 0x0020 - 0x00FF: Basic Latin + Latin-1 Supplement (zawiera 0x91 i inne znaki specjalne)
+    // 0x0100 - 0x017F: Latin Extended-A (polskie znaki ĄĘĆ...)
+    static const ImWchar ranges[] = { 0x0020, 0x00FF, 0x0100, 0x017F, 0 };
+
+    // Ładujemy czcionkę systemową (Consolas jest świetna do kodu)
+    // Jeśli plik nie istnieje, ImGui użyje domyślnej, więc jest to bezpieczne.
+    io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\consola.ttf", 16.0f, NULL, ranges);
+
+    // Ważne: Przebudowujemy teksturę czcionek dla Rayliba/ImGui
+    // --- KONIEC MODYFIKACJI ---
+
     io.FontGlobalScale = 1.35f;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.IniFilename = nullptr;

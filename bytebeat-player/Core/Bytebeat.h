@@ -5,7 +5,7 @@
 #include <map>
 
 enum class TokType { Number, VarT, Op, LParen, RParen, Fun, Quest, Colon, Identifier, String, ArrayLiteral, VarPtr };
-enum class OpType { Add, Sub, Mul, Div, Mod, And, Or, Xor, Shl, Shr, Neg, BitNot, LT, GT, LE, GE, EQ, NE, Ternary, Assign, Coma, CharCodeAt, Index };
+enum class OpType { Add, Sub, Mul, Div, Mod, And, Or, Xor, Shl, Shr, Neg, BitNot, LT, GT, LE, GE, EQ, NE, Ternary, Assign, Coma, CharCodeAt, Index, Length };
 enum class FunType { Sin, Cos, Abs, Floor, Tan, Pow, Random };
 
 struct Token {
