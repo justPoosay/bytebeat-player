@@ -11,10 +11,13 @@ struct AppState {
     enum class BytebeatMode { C_Compatible, JS_Compatible };
     BytebeatMode currentMode = BytebeatMode::C_Compatible;
 
-    // Quick access
+    // FAST ACCESS SYSTEM
     std::vector<double> vmMemory;
     std::map<std::string, int> varTable;
+
+    // Mapa do przechowywania ukrytych stringów
     std::map<std::string, std::string> hiddenChunks;
+    // Licznik do generowania unikalnych nazw placeholderów
     int hiddenCounter = 0;
 
     // Allocate index for variable

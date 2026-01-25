@@ -183,39 +183,51 @@ string CompressCode(const string& code) {
             while (i < len) {
                 if (code[i] == quote) {
                     if (i > 0 && code[i - 1] == '\\' && (i < 2 || code[i - 2] != '\\')) {
+                        // To jest znak ucieczki, lecimy dalej
                         continue;
                     }
                     else {
-                        break;
+                        break; // Koniec stringa
                     }
                 }
                 i++;
             }
 
+            // Mamy cały string od 'start' do 'i'
             size_t strLen = i - start + 1;
-            string content = code.substr(start, strLen);
+            string content = code.substr(start, strLen); // Zawiera cudzysłowy
 
+            // WARUNEK: Czy string jest dłuższy niż 1000 znaków?
             if (strLen > 1000) {
-                // Generate unique key
+                // Generujemy unikalny klucz
                 string key = "@HIDDEN_DATA_" + to_string(state.hiddenCounter++) + "@";
+
+                // Zapisujemy oryginał do schowka
                 state.hiddenChunks[key] = content;
+
+                // Do edytora wysyłamy tylko klucz
                 out << key;
             }
             else {
+                // Jeśli krótki, zostawiamy bez zmian
                 out << content;
             }
         }
         else {
+            // Zwykły kod, przepisujemy
             out << c;
         }
     }
     return out.str();
 }
 
+// Funkcja 2: Podmienia kody z powrotem na dane (dla kompilatora)
 string ExpandCode(const string& code) {
     string result = code;
 
+    // Używamy "pair" zamiast "[key, value]" - zadziała na każdym C++
     for (auto const& pair : state.hiddenChunks) {
+        // Wyciągamy zmienne ręcznie
         string key = pair.first;
         string value = pair.second;
 

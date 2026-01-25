@@ -1,6 +1,6 @@
-# bytebeat-player
+﻿# bytebeat-player
 
 ## ToDo:
-- fix underlining line with error to work for both Classic and Javascript modes
-- add function .length (for fetching data string length for charCodeAt)
-- add expandable categories in Presets window
+- add expandable categories (lists) in Presets window
+- add buttons "ORIGINAL" and "FORMAT" for presets with more than 1000 characters
+- add feature for dragging .wav file to editor and converting it to HEX string with charCodeAt formula

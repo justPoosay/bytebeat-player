@@ -535,7 +535,7 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
     bool inQuote = false;
     char quoteChar = 0;
 
-    // SMART SPLIT: Breaking down into instructions
+    // --- SMART SPLIT: Breaking down into instructions ---
     for (size_t i = 0; i < code.size(); i++) {
         char c = code[i];
         if (inQuote) {
@@ -601,7 +601,7 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
         if (segment.find_first_not_of(" \t\n\r") == string::npos) continue;
         Instruction ins;
 
-        // SMART ASSIGN DETECT: Ignore '=' inside ()
+        // --- SMART ASSIGN DETECT: Ignore '=' inside () ---
         size_t assignPos = string::npos;
         bool isAssign = false;
 

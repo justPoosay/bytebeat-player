@@ -27,6 +27,9 @@
 #include <string>
 #include <cstdio>
 #include <cstring>
+#include <sstream>
+#include <iomanip>
+#include <vector>
 
 using namespace std;
 
@@ -59,12 +62,12 @@ int main() {
     for (auto& k : keywords) {
         TextEditor::Identifier id;
         id.mDeclaration = "Built-in function";
-        lang.mIdentifiers.insert(std::make_pair(std::string(k), id));
+        lang.mIdentifiers.insert(make_pair(string(k), id));
     }
 
     TextEditor::Identifier idT;
     idT.mDeclaration = "Time variable (counter)";
-    lang.mIdentifiers.insert(std::make_pair("t", idT));
+    lang.mIdentifiers.insert(make_pair("t", idT));
     state.editor.SetLanguageDefinition(lang);
     state.editor.SetText(state.inputBuf);
 
@@ -88,8 +91,23 @@ int main() {
     ApplyTheme(currentThemeIdx);
     const char* themeNames[] = { "Dark", "Light", "Classic", "Matrix Green", "Deep Ocean" };
 
+
     while (!WindowShouldClose()) {
         if (!io.WantCaptureKeyboard && IsKeyPressed(KEY_ENTER)) state.playing = !state.playing;
+
+        // DRAG & DROP
+        if (IsFileDropped()) {
+            FilePathList droppedFiles = LoadDroppedFiles();
+            if (droppedFiles.count > 0) {
+                const char* filePath = droppedFiles.paths[0];
+                if (IsFileExtension(filePath, ".wav")) {
+                    string fullCode = ConvertWavToBytebeat(filePath);
+                    state.currentMode = AppState::BytebeatMode::JS_Compatible;
+                    LoadCodeToEditor(fullCode);
+                }
+            }
+            UnloadDroppedFiles(droppedFiles);
+        }
 
         BeginDrawing();
         ClearBackground({ 15, 15, 20, 255 });
@@ -97,14 +115,22 @@ int main() {
 
         // LIVE COMPILATION
         if (state.editor.IsTextChanged()) {
-            string code = state.editor.GetText();
-            // Copy to buffor
-            strncpy(state.inputBuf, code.c_str(), sizeof(state.inputBuf) - 1);
+            string viewCode = state.editor.GetText(); // @HIDDEN
 
-            if (state.currentMode == AppState::BytebeatMode::C_Compatible) state.valid = state.expr.Compile(code, state.errorMsg, state.errorPos);
-            else state.valid = state.complexEngine.Compile(code, state.errorMsg, state.errorPos); // Return errorPos
+            // Expand @HIDDEN -> \x80\x80...
+            string realCode = ExpandCode(viewCode);
 
-            UpdateErrorMarkers(); // Update red underlines
+            // Copy to inputBuf viewCode bc realCode causes buffer overflow
+            strncpy(state.inputBuf, viewCode.c_str(), sizeof(state.inputBuf) - 1);
+            state.inputBuf[sizeof(state.inputBuf) - 1] = '\0';
+
+            state.errorMsg.clear();
+            if (state.currentMode == AppState::BytebeatMode::C_Compatible)
+                state.valid = state.expr.Compile(realCode, state.errorMsg, state.errorPos);
+            else
+                state.valid = state.complexEngine.Compile(realCode, state.errorMsg, state.errorPos);
+
+            UpdateErrorMarkers();
         }
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -135,22 +161,6 @@ int main() {
         ImGui::Begin("Editor");
         state.editor.Render("TextEditor", ImVec2(0, -60));
 
-        string currentCode = state.editor.GetText();
-        static string lastCode;
-        if (currentCode != lastCode) {
-            strncpy(state.inputBuf, currentCode.c_str(), sizeof(state.inputBuf) - 1);
-            state.valid = state.expr.Compile(state.inputBuf, state.errorMsg, state.errorPos);
-            lastCode = currentCode;
-        }
-
-        if (ImGui::Button(state.playing ? "STOP" : "PLAY", ImVec2(100, 40))) state.playing = !state.playing;
-        ImGui::SameLine();
-        if (ImGui::Button("Reset", ImVec2(100, 40))) { 
-            state.t = 0; 
-            state.tAccum = 0.0; 
-        }
-        ImGui::SameLine();
-
         char zoomBuf[32];
         if (state.zoomIdx == 0) sprintf(zoomBuf, "1x");
         else sprintf(zoomBuf, "1/%dx", (int)state.zoomFactors[state.zoomIdx]);
@@ -167,19 +177,20 @@ int main() {
                 if (ImGui::Selectable(modeNames[i], isSelected)) {
                     state.currentMode = (i == 0) ? AppState::BytebeatMode::C_Compatible : AppState::BytebeatMode::JS_Compatible;
 
-                    // Reset timer
+                    string viewCode = state.editor.GetText();
+                    string realCode = ExpandCode(viewCode);
+
+                    strncpy(state.inputBuf, viewCode.c_str(), sizeof(state.inputBuf) - 1);
+                    state.inputBuf[sizeof(state.inputBuf) - 1] = '\0';
+
                     state.t = 0;
                     state.tAccum = 0.0;
 
-                    // Force recompilation immediately
-                    string code = state.editor.GetText();
+                    if (state.currentMode == AppState::BytebeatMode::C_Compatible)
+                        state.valid = state.expr.Compile(realCode, state.errorMsg, state.errorPos);
+                    else
+                        state.valid = state.complexEngine.Compile(realCode, state.errorMsg, state.errorPos);
 
-                    strncpy(state.inputBuf, code.c_str(), sizeof(state.inputBuf) - 1);
-                    state.inputBuf[sizeof(state.inputBuf) - 1] = '\0';
-
-                    if (state.currentMode == AppState::BytebeatMode::C_Compatible) state.valid = state.expr.Compile(code, state.errorMsg, state.errorPos);
-                    else state.valid = state.complexEngine.Compile(code, state.errorMsg, state.errorPos);
-                    
                     UpdateErrorMarkers();
                 }
                 if (isSelected) ImGui::SetItemDefaultFocus();
@@ -233,14 +244,15 @@ int main() {
                 ImGui::PushID(preset.title.c_str());
                 ImGui::TextColored({ 0.4f, 0.7f, 1.0f, 1.0f }, "%s", preset.title.c_str());
 
-                if (ImGui::Selectable(preset.code.c_str(), false)) {
-                    strncpy(state.inputBuf, preset.code.c_str(), sizeof(state.inputBuf) - 1);
-                    state.inputBuf[sizeof(state.inputBuf) - 1] = '\0';
-                    state.editor.SetText(preset.code); // This triggers IsTextChanged next frame
+                if (ImGui::Selectable(preset.code.c_str())) {
+                    if (preset.mode == PresetMode::Classic) {
+                        state.currentMode = AppState::BytebeatMode::C_Compatible;
+                    }
+                    else { 
+                        state.currentMode = AppState::BytebeatMode::JS_Compatible; 
+                    }
 
-                    state.t = 0;
-                    state.tAccum = 0.0;
-                    state.playing = true;
+                    LoadCodeToEditor(preset.code);
 
                     // Auto-select sample rate
                     bool found = false;
@@ -272,8 +284,8 @@ int main() {
         ImDrawList* dl = ImGui::GetWindowDrawList();
 
         if (!state.valid) {
-            std::string msg = state.errorMsg.empty() ? "Unknown Error" : state.errorMsg;
-            std::string fullError = "ERROR: " + msg;
+            string msg = state.errorMsg.empty() ? "Unknown Error" : state.errorMsg;
+            string fullError = "ERROR: " + msg;
 
             // Center text
             ImVec2 textSize = ImGui::CalcTextSize(fullError.c_str());
@@ -309,12 +321,42 @@ int main() {
                 dl->AddLine({ x1, y1 }, { x2, y2 }, ImColor::HSV(n / 256.0f, 0.8f, 1.0f), 2.5f);
             }
         }
+
+        // PLAY/PAUSE button
+        const char* icon = state.playing ? "PAUSE" : "PLAY";
+        ImVec2 btnSize(100, 64);
+        ImVec2 btnCenter(p.x + sz.x / 2, p.y + sz.y / 2);
+        ImVec2 btnMin(btnCenter.x - btnSize.x / 2, btnCenter.y - btnSize.y / 2);
+        ImVec2 btnMax(btnCenter.x + btnSize.x / 2, btnCenter.y + btnSize.y / 2);
+
+        bool oscHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) &&
+            ImGui::IsMouseHoveringRect(p, ImVec2(p.x + sz.x, p.y + sz.y));
+
+        if (oscHovered) {
+            dl->AddRectFilled(btnMin, btnMax, IM_COL32(60, 180, 255, 255), 16.0f);
+
+            ImVec2 textSize = ImGui::GetFont()->CalcTextSizeA(28.0f, FLT_MAX, 0.0f, icon);
+            ImVec2 textPos(btnCenter.x - textSize.x / 2, btnCenter.y - textSize.y / 2);
+            textPos.y += 2.0f; // Correction in vertical axis
+            dl->AddText(NULL, 28.0f, textPos, IM_COL32(255, 255, 255, 255), icon);
+
+            // Tooltip
+            ImGui::SetTooltip("LMB: Play/Pause\nRMB: Reset");
+
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                state.playing = !state.playing;
+            }
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+                state.t = 0;
+                state.tAccum = 0.0;
+            }
+        }
         ImGui::End();
 
         // --- SUCCESS POPUP ---
         if (state.successMsgTimer > 0) {
             state.successMsgTimer -= GetFrameTime();
-            ImGui::SetNextWindowPos(ImVec2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowPos(ImVec2(GetScreenWidth() / 2, GetScreenHeight() / 2), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
             ImGui::Begin("##Success", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::TextColored(ImVec4(0, 1, 0, 1), "SUCCESS: '%s' saved!", state.fileName.c_str());
             ImGui::End();

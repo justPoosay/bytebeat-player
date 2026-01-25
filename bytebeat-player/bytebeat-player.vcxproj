@@ -96,6 +96,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -135,6 +136,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -190,6 +192,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="bytebeat-player.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
