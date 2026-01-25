@@ -244,14 +244,19 @@ int main() {
                 ImGui::PushID(preset.title.c_str());
                 ImGui::TextColored({ 0.4f, 0.7f, 1.0f, 1.0f }, "%s", preset.title.c_str());
 
-                if (ImGui::Selectable(preset.code.c_str())) {
+                // Text clipping
+                string label = preset.code;
+                if (label.length() > 40) {
+                    label = label.substr(0, 40) + "...";
+                }
+
+                if (ImGui::Selectable(label.c_str())) {
                     if (preset.mode == PresetMode::Classic) {
                         state.currentMode = AppState::BytebeatMode::C_Compatible;
                     }
-                    else { 
-                        state.currentMode = AppState::BytebeatMode::JS_Compatible; 
+                    else {
+                        state.currentMode = AppState::BytebeatMode::JS_Compatible;
                     }
-
                     LoadCodeToEditor(preset.code);
 
                     // Auto-select sample rate
