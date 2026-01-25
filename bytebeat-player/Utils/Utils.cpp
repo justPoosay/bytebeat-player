@@ -135,6 +135,7 @@ void LoadCodeToEditor(string fullCode) {
     UpdateErrorMarkers();
     state.t = 0;
     state.tAccum = 0.0;
+    state.rateIdx = 0;
     state.playing = true;
 }
 
