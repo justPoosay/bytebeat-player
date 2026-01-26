@@ -1,11 +1,9 @@
-# Bytebeat Composer C++
-
+﻿# Bytebeat Composer C++
 A real-time algorithmic music generator written in C++. This application allows users to write mathematical formulas that generate audio waveforms on the fly, visualizing them through an integrated oscilloscope.
 
 Built with **Raylib** and **ImGui**, featuring a high-performance audio engine capable of handling complex expressions in real-time.
 
 ## Features
-
 * **Real-time Compilation:** Audio reacts instantly to code changes.
 * **Dual Engine Support:** Supports both Classic C-style bytebeat syntax and JavaScript-compatible expressions.
 * **Integrated Oscilloscope:** Visualizes the waveform output with precise synchronization.
@@ -15,7 +13,6 @@ Built with **Raylib** and **ImGui**, featuring a high-performance audio engine c
 * **Preset System:** Includes a collection of classic and community-found bytebeat formulas.
 
 ## Installation & Build
-
 This project is built using Visual Studio 2022.
 
 1.  Clone the repository.
@@ -26,7 +23,6 @@ This project is built using Visual Studio 2022.
 *Note: Dependencies (Raylib, ImGui) are included in the `Vendor` directory.*
 
 ## Controls
-
 * **Play/Pause:** Press `Enter` or click the button on the Oscilloscope.
 * **Reset Time:** Right-click on the Oscilloscope.
 * **Fullscreen:** Press `F11`.
@@ -39,14 +35,12 @@ This project is built using Visual Studio 2022.
 - [ ] Update `ExportToWav()` to include user input for exported sample length (currently fixed at 30s)
 - [ ] Expand Sample Rate list to accept custom sample rate input
 - [ ] Add expandable categories (sub-lists) in the Presets window
-
 ### Completed
-- [x] ~~Implement automatic layout reset on window resize~~
-- [x] ~~Add "Fit to Window" algorithm to eliminate horizontal scrolling~~
-- [x] ~~Fix logic for loading default presets on startup~~
-- [x] ~~Implement high-performance waveform rendering~~
-- [x] ~~Add visual "Overlay" buttons for the Oscilloscope~~
+- [x] ~~add charCodeAt (for "importing" wav songs)~~
+- [x] ~~fix underlining line with error to work for both Classic and Javascript modes~~
+- [x] ~~add function .length (for fetching data string length for charCodeAt)~~
+- [x] ~~add `ConvertWavToBytebeat()` for dragging .wav to editor and converting it to HEX string with charCodeAt formula~~
+- [x] ~~fix ImGui window proportions for fullscreen mode~~
 
 ## License
-
 This project is open-source. Feel free to modify and distribute.
