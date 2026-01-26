@@ -141,23 +141,34 @@ int main() {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(viewport->ID, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
 
-        if (firstFrame) {
+        // Sprawdzamy: Pierwsza klatka LUB zmiana rozmiaru okna LUB wciśnięcie F11
+        if (firstFrame || IsWindowResized() || IsKeyPressed(KEY_F11)) {
             firstFrame = false;
+
+            // Czyścimy stary układ
             ImGui::DockBuilderRemoveNode(dockspace_id);
             ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
             ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
 
-            ImGuiID dock_id_bottom;
-            ImGuiID dock_id_top = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Up, 0.5f, NULL, &dock_id_bottom);
-            ImGuiID dock_id_top_right;
-            ImGuiID dock_id_top_left = ImGui::DockBuilderSplitNode(dock_id_top, ImGuiDir_Left, 0.5f, NULL, &dock_id_top_right);
-            ImGuiID dock_id_bottom_right;
-            ImGuiID dock_id_bottom_left = ImGui::DockBuilderSplitNode(dock_id_bottom, ImGuiDir_Left, 0.5f, NULL, &dock_id_bottom_right);
+            // --- TWORZENIE UKŁADU 2x2 ---
 
-            ImGui::DockBuilderDockWindow("Editor", dock_id_top_left);
-            ImGui::DockBuilderDockWindow("Presets", dock_id_top_right);
-            ImGui::DockBuilderDockWindow("Settings", dock_id_bottom_left);
-            ImGui::DockBuilderDockWindow("Oscilloscope", dock_id_bottom_right);
+            // 1. Dzielimy ekran na PÓŁ w pionie (Lewa / Prawa)
+            ImGuiID dock_right_id;
+            ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.5f, NULL, &dock_right_id);
+
+            // 2. Dzielimy LEWĄ stronę na pół w poziomie (Góra: Editor / Dół: Settings)
+            ImGuiID dock_settings_id; // Dół
+            ImGuiID dock_editor_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.5f, NULL, &dock_settings_id);
+
+            // 3. Dzielimy PRAWĄ stronę na pół w poziomie (Góra: Presets / Dół: Oscilloscope)
+            ImGuiID dock_oscilloscope_id; // Dół
+            ImGuiID dock_presets_id = ImGui::DockBuilderSplitNode(dock_right_id, ImGuiDir_Up, 0.5f, NULL, &dock_oscilloscope_id);
+
+            // 4. Przypisujemy okna do konkretnych ćwiartek
+            ImGui::DockBuilderDockWindow("Editor", dock_editor_id);           // Lewy Górny
+            ImGui::DockBuilderDockWindow("Settings", dock_settings_id);       // Lewy Dolny
+            ImGui::DockBuilderDockWindow("Presets", dock_presets_id);         // Prawy Górny
+            ImGui::DockBuilderDockWindow("Oscilloscope", dock_oscilloscope_id); // Prawy Dolny
 
             ImGui::DockBuilderFinish(dockspace_id);
         }
