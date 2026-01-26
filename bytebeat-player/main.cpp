@@ -34,7 +34,7 @@
 using namespace std;
 
 int main() {
-    SetConfigFlags(FLAG_MSAA_4X_HINT);
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(1280, 720, "Bytebeat Composer C++");
     SetTargetFPS(144);
     InitAudioDevice();
@@ -66,7 +66,7 @@ int main() {
     }
 
     TextEditor::Identifier idT;
-    idT.mDeclaration = "Time variable (counter)";
+    idT.mDeclaration = "Time variable";
     lang.mIdentifiers.insert(make_pair("t", idT));
     state.editor.SetLanguageDefinition(lang);
     state.editor.SetText(state.inputBuf);
@@ -93,7 +93,12 @@ int main() {
 
 
     while (!WindowShouldClose()) {
-        if (!io.WantCaptureKeyboard && IsKeyPressed(KEY_ENTER)) state.playing = !state.playing;
+        if (!io.WantCaptureKeyboard && IsKeyPressed(KEY_ENTER)) {
+            state.playing = !state.playing;
+        }
+        if (IsKeyPressed(KEY_F11)) {
+            ToggleFullscreen();
+        }
 
         // DRAG & DROP
         if (IsFileDropped()) {
@@ -197,6 +202,36 @@ int main() {
             }
             ImGui::EndCombo();
         }
+        ImGui::SameLine();
+
+        // --- PRZYCISK: FIT TO WINDOW (Z uwzględnieniem Scrollbara) ---
+        if (ImGui::Button("Format", ImVec2(100, 40))) {
+            string currentCode = state.editor.GetText();
+
+            // 1. Pobieramy dostępną szerokość
+            float availWidth = ImGui::GetContentRegionAvail().x;
+
+            // 2. Odejmujemy marginesy:
+            // - 50.0f na numery linii po lewej
+            // - ScrollbarSize na pasek przewijania po prawej (żeby nie zakrywał tekstu)
+            availWidth -= (50.0f + ImGui::GetStyle().ScrollbarSize);
+
+            // 3. Obliczamy szerokość jednego znaku
+            float charWidth = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, 0.0f, "A").x;
+
+            // 4. Wyliczamy ile znaków się zmieści
+            int maxChars = (int)(availWidth / charWidth);
+
+            // 5. Odejmujemy jeszcze 1 znak marginesu bezpieczeństwa (zgodnie z prośbą)
+            maxChars -= 1;
+
+            // 6. Formatujemy
+            // (Funkcja FormatCode w Utils.cpp jest już poprawiona i nie dodaje tabów)
+            string formatted = FormatCode(currentCode, maxChars);
+            state.editor.SetText(formatted);
+        }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Wrap lines to fit window (minus scrollbar width)");
+
         ImGui::End();
 
         // --- SETTINGS WINDOW ---
