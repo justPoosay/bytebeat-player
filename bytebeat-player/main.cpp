@@ -149,7 +149,6 @@ int main() {
             ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
 
             // GRID 2X2
-
             ImGuiID dock_right_id;
             ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.5f, NULL, &dock_right_id);
 
@@ -217,7 +216,7 @@ int main() {
             availWidth -= (50.0f + ImGui::GetStyle().ScrollbarSize);
             float charWidth = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, 0.0f, "A").x;
             int maxChars = (int)(availWidth / charWidth);
-            maxChars -= 1;
+            maxChars -= 2;
 
             string formatted = FormatCode(currentCode, maxChars);
             state.editor.SetText(formatted);

@@ -140,50 +140,56 @@ void LoadCodeToEditor(string fullCode) {
 }
 
 string FormatCode(const string& code, int maxChars) {
-    if (maxChars < 20) maxChars = 20;
+    maxChars = max(maxChars, 20);
 
+    stringstream ss(code);
+    string originalLine;
     stringstream out;
-    string line;
 
     auto isBreakChar = [](char c) {
-        return c == ',' || c == ';' || c == '{' || c == '}' ||
-            c == '+' || c == '-' || c == '*' || c == '/' ||
-            c == '&' || c == '|' || c == '^' || c == '?' || c == ':';
-        };
+        return 
+            c == ',' || 
+            c == ';' ||
+            c == '{' ||
+            c == '}' ||
+            c == '+' || 
+            c == '-' ||
+            c == '*' ||
+            c == '/' ||
+            c == '&' || 
+            c == '|' ||
+            c == '^' || 
+            c == '?' || 
+            c == ':';
+    };
+    bool firstLine = true;
 
-    for (size_t i = 0; i < code.length(); i++) {
-        char c = code[i];
+    while (getline(ss, originalLine)) {
+        if (!firstLine) out << "\n";
+        firstLine = false;
 
-        if (c == '\n') {
-            out << line << '\n';
-            line.clear();
-            continue;
-        }
-        line += c;
-
-        if (line.length() >= maxChars) {
+        while ((int)originalLine.length() > maxChars) {
             int splitIdx = -1;
-            for (int k = (int)line.length() - 1; k >= 0; k--) {
-                if (k > line.length() * 0.7 && isBreakChar(line[k])) {
+
+            int searchStart = (int)(maxChars * 0.6);
+            for (int k = maxChars - 1; k >= searchStart; k--) {
+                if (isBreakChar(originalLine[k])) {
                     splitIdx = k;
                     break;
                 }
             }
 
             if (splitIdx != -1) {
-                string firstPart = line.substr(0, splitIdx + 1);
-                string secondPart = line.substr(splitIdx + 1);
-
-                out << firstPart << "\n";
-                line = secondPart;
+                out << originalLine.substr(0, splitIdx + 1) << "\n";
+                originalLine = originalLine.substr(splitIdx + 1);
             }
             else {
-                out << line << "\n";
-                line.clear();
+                out << originalLine.substr(0, maxChars) << "\n";
+                originalLine = originalLine.substr(maxChars);
             }
         }
+        out << originalLine;
     }
-    out << line;
     return out.str();
 }
 
