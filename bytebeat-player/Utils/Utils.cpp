@@ -140,12 +140,11 @@ void LoadCodeToEditor(string fullCode) {
 }
 
 string FormatCode(const string& code, int maxChars) {
-    if (maxChars < 20) maxChars = 20; // Zabezpieczenie przed zbyt wąskim oknem
+    if (maxChars < 20) maxChars = 20;
 
     stringstream out;
     string line;
 
-    // Lista znaków, po których bezpiecznie można złamać linię
     auto isBreakChar = [](char c) {
         return c == ',' || c == ';' || c == '{' || c == '}' ||
             c == '+' || c == '-' || c == '*' || c == '/' ||
@@ -155,21 +154,16 @@ string FormatCode(const string& code, int maxChars) {
     for (size_t i = 0; i < code.length(); i++) {
         char c = code[i];
 
-        // Resetujemy linię jeśli w oryginale był Enter
         if (c == '\n') {
             out << line << '\n';
             line.clear();
             continue;
         }
-
         line += c;
 
-        // Jeśli linia przekracza szerokość okna
         if (line.length() >= maxChars) {
-            // Szukamy ostatniego dobrego punktu do podziału (idziemy od końca linii)
             int splitIdx = -1;
             for (int k = (int)line.length() - 1; k >= 0; k--) {
-                // Nie chcemy ciąć zaraz na końcu, ani za blisko początku
                 if (k > line.length() * 0.7 && isBreakChar(line[k])) {
                     splitIdx = k;
                     break;
@@ -177,15 +171,13 @@ string FormatCode(const string& code, int maxChars) {
             }
 
             if (splitIdx != -1) {
-                // Mamy bezpieczny punkt podziału
                 string firstPart = line.substr(0, splitIdx + 1);
                 string secondPart = line.substr(splitIdx + 1);
 
-                out << firstPart << "\n"; // Enter + wcięcie
-                line = secondPart; // Reszta przechodzi do nowej linii
+                out << firstPart << "\n";
+                line = secondPart;
             }
             else {
-                // Nie znaleziono bezpiecznego punktu, tniemy "na chama" (żeby nie wyszło za ekran)
                 out << line << "\n";
                 line.clear();
             }
