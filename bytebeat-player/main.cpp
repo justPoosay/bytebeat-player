@@ -184,6 +184,7 @@ int main() {
                         }
                     }
                     if (!foundRate) state.rateIdx = 0;
+
                     break;
                 }
             }

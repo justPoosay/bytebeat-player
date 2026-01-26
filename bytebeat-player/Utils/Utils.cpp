@@ -133,7 +133,7 @@ void LoadCodeToEditor(string fullCode) {
     UpdateErrorMarkers();
     state.t = 0;
     state.tAccum = 0.0;
-    state.rateIdx = 0;
+    state.rateIdx = 4;
     state.playing = true;
 }
 
@@ -205,8 +205,8 @@ string ConvertWavToBytebeat(const char* filePath) {
     Wave wave = LoadWave(filePath);
     if (wave.data == nullptr) TraceLog(LOG_ERROR, "Failed to load .wav file");
 
-    // Format audio (8000Hz/8-bit/mono)
-    WaveFormat(&wave, 8000, 8, 1);
+    // Format audio (32000Hz/8-bit/mono)
+    WaveFormat(&wave, 32000, 8, 1);
 
     // Generate HEX
     stringstream ss;

@@ -41,6 +41,7 @@ This project is built using Visual Studio 2022.
 - [x] ~~add function .length (for fetching data string length for charCodeAt)~~
 - [x] ~~add `ConvertWavToBytebeat()` for dragging .wav to editor and converting it to HEX string with charCodeAt formula~~
 - [x] ~~fix ImGui window proportions for fullscreen mode~~
+- [x] ~~change converted audio format from 8000Hz to 32000Hz in `ConvertWavToBytebeat()`~~
 
 ## License
 This project is open-source. Feel free to modify and distribute.
