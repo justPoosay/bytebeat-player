@@ -40,9 +40,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
     errorPos = -1;
     m_rpn.clear();
 
-    if (expr.empty()) {
-        return false;
-    }
+    if (expr.empty()) return false;
 
     vector<Token> tokens;
     vector<Token> stack;
@@ -51,16 +49,21 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
     static const unordered_map<string, FunType> funMap = {
         {"sin", FunType::Sin}, {"cos", FunType::Cos},
         {"abs", FunType::Abs}, {"floor", FunType::Floor},
-        {"pow", FunType::Pow}, {"tan", FunType::Tan}, {"random", FunType::Random}
+        {"pow", FunType::Pow}, {"tan", FunType::Tan}, 
+        {"random", FunType::Random}
     };
     static const unordered_map<string, OpType> doubleOps = {
-        {"<<", OpType::Shl}, {">>", OpType::Shr}, {"<=", OpType::LE},
-        {">=", OpType::GE}, {"==", OpType::EQ}, {"!=", OpType::NE}
+        {"<<", OpType::Shl}, {">>", OpType::Shr}, 
+        {"<=", OpType::LE}, {">=", OpType::GE}, 
+        {"==", OpType::EQ}, {"!=", OpType::NE}
     };
     static const unordered_map<char, OpType> singleOps = {
-        {'+', OpType::Add}, {'-', OpType::Sub}, {'*', OpType::Mul}, {'/', OpType::Div},
-        {'%', OpType::Mod}, {'&', OpType::And}, {'|', OpType::Or}, {'^', OpType::Xor},
-        {'<', OpType::LT}, {'>', OpType::GT}, {'=', OpType::Assign}, {',', OpType::Coma}
+        {'+', OpType::Add}, {'-', OpType::Sub},
+        {'*', OpType::Mul}, {'/', OpType::Div},
+        {'%', OpType::Mod}, {'&', OpType::And},
+        {'|', OpType::Or}, {'^', OpType::Xor},
+        {'<', OpType::LT}, {'>', OpType::GT},
+        {'=', OpType::Assign}, {',', OpType::Coma}
     };
 
     for (size_t i = 0; i < expr.size(); ) {
@@ -86,23 +89,18 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
         }
         else if (isalpha((unsigned char)expr[i]) || expr[i] == '_') {
             string name;
-            while (i < expr.size() && (isalnum((unsigned char)expr[i]) || expr[i] == '_')) {
+            while (i < expr.size() && 
+                (isalnum((unsigned char)expr[i]) || expr[i] == '_'))
                 name += expr[i++];
-            }
-
-            if (name == "t") {
-                tokens.emplace_back(TokType::VarT, start);
-            }
-            else if (funMap.count(name)) {
-                tokens.emplace_back(funMap.at(name), start);
-            }
+            if (name == "t") tokens.emplace_back(TokType::VarT, start);
+            else if (funMap.count(name)) tokens.emplace_back(funMap.at(name), start);
             else {
                 size_t j = i;
                 while (j < expr.size() && isspace((unsigned char)expr[j])) j++;
                 bool isAssign = false;
-                if (j < expr.size() && expr[j] == '=' && (j + 1 >= expr.size() || expr[j + 1] != '=')) {
+                if (j < expr.size() && expr[j] == '=' && 
+                    (j + 1 >= expr.size() || expr[j + 1] != '='))
                     isAssign = true;
-                }
                 int id = state.getVarId(name);
                 tokens.emplace_back(id, start, isAssign);
             }
@@ -129,30 +127,27 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                             if (c >= 'A' && c <= 'F') return c - 'A' + 10;
                             if (c >= 'a' && c <= 'f') return c - 'a' + 10;
                             return 0;
-                            };
+                        };
                         char byteVal = (char)((hexVal(h1) << 4) | hexVal(h2));
                         s += byteVal;
                     }
                     else {
                         switch (nextC) {
-                        case '0': s += '\0'; break;
-                        case 'n': s += '\n'; break;
-                        case 'r': s += '\r'; break;
-                        case 't': s += '\t'; break;
-                        case '\\': s += '\\'; break;
-                        case '\'': s += '\''; break;
-                        case '"': s += '"'; break;
-                        default: s += nextC; break;
+                            case '0': s += '\0'; break;
+                            case 'n': s += '\n'; break;
+                            case 'r': s += '\r'; break;
+                            case 't': s += '\t'; break;
+                            case '\\': s += '\\'; break;
+                            case '\'': s += '\''; break;
+                            case '"': s += '"'; break;
+                            default: s += nextC; break;
                         }
                         i++;
                     }
                 }
-                else {
-                    s += expr[i++];
-                }
+                else s += expr[i++];
             }
             if (i < expr.size() && expr[i] == quote) i++;
-
             g_strings.push_back(s);
             Token t(TokType::String, start);
             t.index = (int)g_strings.size() - 1;
@@ -222,7 +217,9 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
             }
 
             if ((expr[i] == '-' || expr[i] == '!') && expectUnary) {
-                tokens.emplace_back(expr[i] == '-' ? OpType::Neg : OpType::BitNot, start);
+                tokens.emplace_back(expr[i] == '-' 
+                    ? OpType::Neg 
+                    : OpType::BitNot, start);
                 i++;
             }
             else {
@@ -263,9 +260,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
             t.type == TokType::VarPtr) {
             m_rpn.push_back(t);
         }
-        else if (t.type == TokType::Fun || t.type == TokType::LParen) {
-            stack.push_back(t);
-        }
+        else if (t.type == TokType::Fun || t.type == TokType::LParen) stack.push_back(t);
         else if (t.type == TokType::RParen) {
             bool foundLParen = false;
             while (!stack.empty()) {
@@ -300,21 +295,23 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                     stack.pop_back();
                 }
                 bool isArgSeparator = false;
-                if (!stack.empty() && stack.back().type == TokType::LParen) {
-                    if (stack.size() >= 2 && stack[stack.size() - 2].type == TokType::Fun) {
-                        isArgSeparator = true;
-                    }
-                }
+                if (!stack.empty() &&
+                    stack.back().type == TokType::LParen && 
+                    stack.size() >= 2 &&
+                    stack[stack.size() - 2].type == TokType::Fun) 
+                    isArgSeparator = true;
                 if (!isArgSeparator) stack.push_back(t);
             }
             else {
-                int prec = (t.type == TokType::Quest || t.type == TokType::Colon) ? 2 :
-                    (t.op == OpType::Neg || t.op == OpType::BitNot) ? 12 :
-                    getPrecedence(t.op);
+                int prec = (t.type == TokType::Quest || t.type == TokType::Colon) 
+                    ? 2 : (t.op == OpType::Neg || t.op == OpType::BitNot) 
+                    ? 12 : getPrecedence(t.op);
                 while (!stack.empty() && stack.back().type != TokType::LParen) {
-                    int topPrec = (stack.back().type == TokType::Fun) ? 12 :
-                        (stack.back().type == TokType::Op && (stack.back().op == OpType::Neg || stack.back().op == OpType::BitNot)) ? 12 :
-                        getPrecedence(stack.back().op);
+                    int topPrec = (stack.back().type == TokType::Fun) 
+                        ? 12 : (stack.back().type == TokType::Op && 
+                            (stack.back().op == OpType::Neg || 
+                                stack.back().op == OpType::BitNot))
+                        ? 12 : getPrecedence(stack.back().op);
                     if (topPrec < prec) break;
                     m_rpn.push_back(stack.back());
                     stack.pop_back();
@@ -540,12 +537,8 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
         char c = code[i];
         if (inQuote) {
             currentSeg += c;
-            if (c == '\\' && i + 1 < code.size()) {
-                currentSeg += code[++i];
-            }
-            else if (c == quoteChar) {
-                inQuote = false;
-            }
+            if (c == '\\' && i + 1 < code.size()) currentSeg += code[++i];
+            else if (c == quoteChar) inQuote = false;
         }
         else {
             if (c == '"' || c == '\'') { 
@@ -558,9 +551,7 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
                 currentSeg += c;
             }
             else if (c == ')') {
-                if (parenDepth > 0) {
-                    parenDepth--;
-                }
+                if (parenDepth > 0) parenDepth--;
                 currentSeg += c; 
             }
             else if (c == '[') {
@@ -568,31 +559,21 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
                 currentSeg += c;
             }
             else if (c == ']') { 
-                if (bracketDepth > 0) {
-                    bracketDepth--;
-                }
+                if (bracketDepth > 0) bracketDepth--;
                 currentSeg += c;
             }
             else if (c == ',') {
                 if (parenDepth == 0 && bracketDepth == 0) {
-                    if (!currentSeg.empty()) {
-                        segments.push_back({ currentSeg, currentSegStart });
-                    }
+                    if (!currentSeg.empty()) segments.push_back({ currentSeg, currentSegStart });
                     currentSeg.clear();
                     currentSegStart = i + 1;
                 }
-                else { 
-                    currentSeg += c;
-                }
+                else currentSeg += c;
             }
-            else {
-                currentSeg += c;
-            }
+            else currentSeg += c;
         }
     }
-    if (!currentSeg.empty()) {
-        segments.push_back({ currentSeg, currentSegStart });
-    }
+    if (!currentSeg.empty()) segments.push_back({ currentSeg, currentSegStart });
 
     for (auto& segData : segments) {
         string& segment = segData.text;
@@ -611,8 +592,8 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
         for (size_t i = 0; i < segment.size(); ++i) {
             char c = segment[i];
             if (q) {
-                if (c == '\\' && i + 1 < segment.size()) { i++; }
-                else if (c == qc) { q = false; }
+                if (c == '\\' && i + 1 < segment.size()) i++;
+                else if (c == qc) q = false;
             }
             else {
                 if (c == '"' || c == '\'') { 
@@ -620,15 +601,15 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
                     qc = c; 
                 }
                 else if (c == '(') pDepth++;
-                else if (c == ')') { 
-                    if (pDepth > 0) {
-                        pDepth--;
-                    }
-                }
+                else if (c == ')' && pDepth > 0) pDepth--;
                 else if (c == '=') {
                     if (pDepth == 0) {
                         bool logic = false;
-                        if (i > 0 && (segment[i - 1] == '!' || segment[i - 1] == '<' || segment[i - 1] == '>')) logic = true;
+                        if (i > 0 && 
+                            (segment[i - 1] == '!' ||
+                                segment[i - 1] == '<' ||  
+                                    segment[i - 1] == '>')) 
+                            logic = true;
                         if (i + 1 < segment.size() && segment[i + 1] == '=') logic = true;
                         if (!logic) { 
                             isAssign = true; 
@@ -676,10 +657,7 @@ int ComplexEngine::Eval(uint32_t t) {
     double lastVal = 0;
     for (auto& ins : instructions) {
         lastVal = ins.expr.Eval(t);
-        if (ins.type == Instruction::Type::AssignVar) {
-            state.vmMemory[ins.targetVarIdx] = lastVal;
-        }
+        if (ins.type == Instruction::Type::AssignVar) state.vmMemory[ins.targetVarIdx] = lastVal;
     }
-
     return (int)((int32_t)lastVal & 0xFF);
 }

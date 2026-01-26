@@ -93,12 +93,8 @@ int main() {
 
 
     while (!WindowShouldClose()) {
-        if (!io.WantCaptureKeyboard && IsKeyPressed(KEY_ENTER)) {
-            state.playing = !state.playing;
-        }
-        if (IsKeyPressed(KEY_F11)) {
-            ToggleFullscreen();
-        }
+        if (!io.WantCaptureKeyboard && IsKeyPressed(KEY_ENTER)) state.playing = !state.playing;
+        if (IsKeyPressed(KEY_F11)) ToggleFullscreen();
 
         // DRAG & DROP
         if (IsFileDropped()) {
@@ -130,11 +126,9 @@ int main() {
             state.inputBuf[sizeof(state.inputBuf) - 1] = '\0';
 
             state.errorMsg.clear();
-            if (state.currentMode == AppState::BytebeatMode::C_Compatible)
-                state.valid = state.expr.Compile(realCode, state.errorMsg, state.errorPos);
-            else
-                state.valid = state.complexEngine.Compile(realCode, state.errorMsg, state.errorPos);
-
+            state.valid = (state.currentMode == AppState::BytebeatMode::C_Compatible)
+                ? state.expr.Compile(realCode, state.errorMsg, state.errorPos)
+                : state.complexEngine.Compile(realCode, state.errorMsg, state.errorPos);
             UpdateErrorMarkers();
         }
 
@@ -171,10 +165,11 @@ int main() {
         state.editor.Render("TextEditor", ImVec2(0, -60));
 
         char zoomBuf[32];
-        if (state.zoomIdx == 0) sprintf(zoomBuf, "1x");
-        else sprintf(zoomBuf, "1/%dx", (int)state.zoomFactors[state.zoomIdx]);
+        state.zoomIdx == 0
+            ? sprintf(zoomBuf, "1x")
+            : sprintf(zoomBuf, "1/%dx", (int)state.zoomFactors[state.zoomIdx]);
 
-        if (ImGui::Button(zoomBuf, ImVec2(60, 40))) state.zoomIdx = (state.zoomIdx + 1) % 4;
+        if (ImGui::Button(zoomBuf, ImVec2(60, 40))) state.zoomIdx = (state.zoomIdx + 1) % 4; 
         ImGui::SameLine();
 
         const char* modeNames[] = { "Classic (C)", "Javascript (JS)" };
@@ -184,7 +179,9 @@ int main() {
             for (int i = 0; i < 2; i++) {
                 bool isSelected = (currentModeIdx == i);
                 if (ImGui::Selectable(modeNames[i], isSelected)) {
-                    state.currentMode = (i == 0) ? AppState::BytebeatMode::C_Compatible : AppState::BytebeatMode::JS_Compatible;
+                    state.currentMode = (i == 0)
+                        ? AppState::BytebeatMode::C_Compatible 
+                        : AppState::BytebeatMode::JS_Compatible;
 
                     string viewCode = state.editor.GetText();
                     string realCode = ExpandCode(viewCode);
@@ -195,10 +192,9 @@ int main() {
                     state.t = 0;
                     state.tAccum = 0.0;
 
-                    if (state.currentMode == AppState::BytebeatMode::C_Compatible)
-                        state.valid = state.expr.Compile(realCode, state.errorMsg, state.errorPos);
-                    else
-                        state.valid = state.complexEngine.Compile(realCode, state.errorMsg, state.errorPos);
+                    state.valid = state.currentMode == AppState::BytebeatMode::C_Compatible
+                        ? state.expr.Compile(realCode, state.errorMsg, state.errorPos)
+                        : state.complexEngine.Compile(realCode, state.errorMsg, state.errorPos);
 
                     UpdateErrorMarkers();
                 }
@@ -221,10 +217,7 @@ int main() {
             string formatted = FormatCode(currentCode, maxChars);
             state.editor.SetText(formatted);
         }
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Wrap lines to fit window (minus scrollbar width)");
-        }
-
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Wrap lines to fit window (minus scrollbar width)");
         ImGui::End();
 
         // --- SETTINGS WINDOW ---
@@ -274,17 +267,13 @@ int main() {
 
                 // Text clipping
                 string label = preset.code;
-                if (label.length() > 40) {
-                    label = label.substr(0, 40) + "...";
-                }
+                if (label.length() > 40) label = label.substr(0, 40) + "...";
 
                 if (ImGui::Selectable(label.c_str())) {
-                    if (preset.mode == PresetMode::Classic) {
-                        state.currentMode = AppState::BytebeatMode::C_Compatible;
-                    }
-                    else {
-                        state.currentMode = AppState::BytebeatMode::JS_Compatible;
-                    }
+                    state.currentMode = 
+                        preset.mode == PresetMode::Classic
+                        ? AppState::BytebeatMode::C_Compatible
+                        : AppState::BytebeatMode::JS_Compatible;
                     LoadCodeToEditor(preset.code);
 
                     // Auto-select sample rate
@@ -376,9 +365,7 @@ int main() {
             // Tooltip
             ImGui::SetTooltip("LMB: Play/Pause\nRMB: Reset");
 
-            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-                state.playing = !state.playing;
-            }
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) state.playing = !state.playing;
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
                 state.t = 0;
                 state.tAccum = 0.0;

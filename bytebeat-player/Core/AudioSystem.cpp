@@ -28,8 +28,6 @@ void MyAudioCallback(void* buffer, unsigned int frames) {
             }
             if (state.tAccum > 100.0) state.tAccum = 0.0;
         }
-        else {
-            out[i] = 0;
-        }
+        else out[i] = 0;
     }
 }

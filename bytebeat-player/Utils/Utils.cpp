@@ -125,18 +125,26 @@ void LoadCodeToEditor(string fullCode) {
     strncpy(state.inputBuf, viewCode.c_str(), sizeof(state.inputBuf) - 1);
 
     state.errorMsg.clear();
-    if (state.currentMode == AppState::BytebeatMode::C_Compatible) {
-        state.valid = state.expr.Compile(fullCode, state.errorMsg, state.errorPos);
-    }
-    else {
-        state.valid = state.complexEngine.Compile(fullCode, state.errorMsg, state.errorPos);
-    }
+    state.valid = (state.currentMode == AppState::BytebeatMode::C_Compatible)
+        ? state.expr.Compile(fullCode, state.errorMsg, state.errorPos)
+        : state.complexEngine.Compile(fullCode, state.errorMsg, state.errorPos);
 
     UpdateErrorMarkers();
     state.t = 0;
     state.tAccum = 0.0;
     state.rateIdx = 0;
     state.playing = true;
+}
+
+uint32_t FindTrigger(uint32_t currentT) {
+    const int searchRange = 1024;
+    for (uint32_t i = 0; i < searchRange; i++) {
+        int valNow = state.expr.Eval(currentT + i) & 0xFF;
+        int valNext = state.expr.Eval(currentT + i + 1) & 0xFF;
+
+        if (valNow <= 2 && valNext > 2) return currentT + i;
+    }
+    return currentT;
 }
 
 string FormatCode(const string& code, int maxChars) {
@@ -147,21 +155,21 @@ string FormatCode(const string& code, int maxChars) {
     stringstream out;
 
     auto isBreakChar = [](char c) {
-        return 
-            c == ',' || 
+        return
+            c == ',' ||
             c == ';' ||
             c == '{' ||
             c == '}' ||
-            c == '+' || 
+            c == '+' ||
             c == '-' ||
             c == '*' ||
             c == '/' ||
-            c == '&' || 
+            c == '&' ||
             c == '|' ||
-            c == '^' || 
-            c == '?' || 
+            c == '^' ||
+            c == '?' ||
             c == ':';
-    };
+        };
     bool firstLine = true;
 
     while (getline(ss, originalLine)) {
@@ -179,14 +187,11 @@ string FormatCode(const string& code, int maxChars) {
                 }
             }
 
-            if (splitIdx != -1) {
-                out << originalLine.substr(0, splitIdx + 1) << "\n";
-                originalLine = originalLine.substr(splitIdx + 1);
-            }
-            else {
-                out << originalLine.substr(0, maxChars) << "\n";
-                originalLine = originalLine.substr(maxChars);
-            }
+            auto n = splitIdx != -1
+                ? splitIdx + 1
+                : maxChars;
+            out << originalLine.substr(0, n) << "\n";
+            originalLine = originalLine.substr(n);
         }
         out << originalLine;
     }
@@ -195,10 +200,7 @@ string FormatCode(const string& code, int maxChars) {
 
 string ConvertWavToBytebeat(const char* filePath) {
     Wave wave = LoadWave(filePath);
-
-    if (wave.data == nullptr) {
-        return "// ERROR: Could not load WAV file.";
-    }
+    if (wave.data == nullptr) TraceLog(LOG_ERROR, "Failed to load .wav file");
 
     // Format audio (8000Hz/8-bit/mono)
     WaveFormat(&wave, 8000, 8, 1);
@@ -236,16 +238,13 @@ string CompressCode(const string& code) {
             i++;
 
             while (i < len) {
-                if (code[i] == quote) {
-                    if (i > 0 && code[i - 1] == '\\' && (i < 2 || code[i - 2] != '\\')) {
-                        continue;
-                    }
-                    else {
-                        break;
-                    }
-                }
+                if (code[i] == quote &&
+                    (i == 0 || code[i - 1] != '\\' ||
+                        (i >= 2 && code[i - 2] == '\\'))) 
+                    break;
                 i++;
             }
+
 
             size_t strLen = i - start + 1;
             string content = code.substr(start, strLen);
@@ -256,13 +255,10 @@ string CompressCode(const string& code) {
                 state.hiddenChunks[key] = content;
                 out << key;
             }
-            else {
-                out << content;
-            }
+            else out << content;
+
         }
-        else {
-            out << c;
-        }
+        else out << c;
     }
     return out.str();
 }
@@ -281,15 +277,4 @@ string ExpandCode(const string& code) {
         }
     }
     return result;
-}
-
-uint32_t FindTrigger(uint32_t currentT) {
-    const int searchRange = 1024;
-    for (uint32_t i = 0; i < searchRange; i++) {
-        int valNow = state.expr.Eval(currentT + i) & 0xFF;
-        int valNext = state.expr.Eval(currentT + i + 1) & 0xFF;
-
-        if (valNow <= 2 && valNext > 2) return currentT + i;
-    }
-    return currentT;
 }
