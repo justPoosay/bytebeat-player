@@ -46,7 +46,7 @@ struct AppState {
     // Settings
     const int rates[7] = { 8000, 11025, 16000, 22050, 32000, 44100, 48000 };
     const char* rateNames[7] = { "8000 Hz", "11025 Hz", "16000 Hz", "22050 Hz", "32000 Hz", "44100 Hz", "48000 Hz" };
-    int rateIdx = 5;
+    int rateIdx = 0;
 
     // View/Export
     float zoomFactors[4] = { 1.0f, 2.0f, 4.0f, 8.0f };

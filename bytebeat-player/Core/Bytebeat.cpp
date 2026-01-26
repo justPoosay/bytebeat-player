@@ -92,6 +92,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
             while (i < expr.size() && 
                 (isalnum((unsigned char)expr[i]) || expr[i] == '_'))
                 name += expr[i++];
+
             if (name == "t") tokens.emplace_back(TokType::VarT, start);
             else if (funMap.count(name)) tokens.emplace_back(funMap.at(name), start);
             else {
@@ -101,6 +102,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                 if (j < expr.size() && expr[j] == '=' && 
                     (j + 1 >= expr.size() || expr[j + 1] != '='))
                     isAssign = true;
+
                 int id = state.getVarId(name);
                 tokens.emplace_back(id, start, isAssign);
             }
@@ -112,7 +114,6 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
             string s;
             while (i < expr.size()) {
                 if (expr[i] == quote) break;
-
                 if (expr[i] == '\\') {
                     i++;
                     if (i >= expr.size()) break;
@@ -133,14 +134,14 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                     }
                     else {
                         switch (nextC) {
-                            case '0': s += '\0'; break;
-                            case 'n': s += '\n'; break;
-                            case 'r': s += '\r'; break;
-                            case 't': s += '\t'; break;
-                            case '\\': s += '\\'; break;
-                            case '\'': s += '\''; break;
-                            case '"': s += '"'; break;
-                            default: s += nextC; break;
+                        case '0': s += '\0'; break;
+                        case 'n': s += '\n'; break;
+                        case 'r': s += '\r'; break;
+                        case 't': s += '\t'; break;
+                        case '\\': s += '\\'; break;
+                        case '\'': s += '\''; break;
+                        case '"': s += '"'; break;
+                        default: s += nextC; break;
                         }
                         i++;
                     }
@@ -295,23 +296,23 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                     stack.pop_back();
                 }
                 bool isArgSeparator = false;
-                if (!stack.empty() &&
-                    stack.back().type == TokType::LParen && 
-                    stack.size() >= 2 &&
-                    stack[stack.size() - 2].type == TokType::Fun) 
+                if (!stack.empty() && stack.back().type == TokType::LParen && 
+                    stack.size() >= 2 && stack[stack.size() - 2].type == TokType::Fun) 
                     isArgSeparator = true;
+
                 if (!isArgSeparator) stack.push_back(t);
             }
             else {
                 int prec = (t.type == TokType::Quest || t.type == TokType::Colon) 
                     ? 2 : (t.op == OpType::Neg || t.op == OpType::BitNot) 
                     ? 12 : getPrecedence(t.op);
+
                 while (!stack.empty() && stack.back().type != TokType::LParen) {
                     int topPrec = (stack.back().type == TokType::Fun) 
                         ? 12 : (stack.back().type == TokType::Op && 
-                            (stack.back().op == OpType::Neg || 
-                                stack.back().op == OpType::BitNot))
+                            (stack.back().op == OpType::Neg || stack.back().op == OpType::BitNot))
                         ? 12 : getPrecedence(stack.back().op);
+
                     if (topPrec < prec) break;
                     m_rpn.push_back(stack.back());
                     stack.pop_back();
@@ -367,12 +368,8 @@ int BytebeatExpression::Eval(uint32_t t) const {
                         v1 = pow(v1, v2);
                     }
                 }
-                else if (tok.fun == FunType::Tan) {
-                    stack[sp] = tan(stack[sp]);
-                }
-                else if (tok.fun == FunType::Random) {
-                    stack[++sp] = (double)rand() / RAND_MAX;
-                }
+                else if (tok.fun == FunType::Tan) stack[sp] = tan(stack[sp]);
+                else if (tok.fun == FunType::Random) stack[++sp] = (double)rand() / RAND_MAX;
                 else {
                     double& v = stack[sp];
                     if (tok.fun == FunType::Sin) v = sin(v);
@@ -393,23 +390,17 @@ int BytebeatExpression::Eval(uint32_t t) const {
         case TokType::Quest: break; // Ignore '?'
         default:
             if (tok.op == OpType::Neg) {
-                if (sp >= 0) {
-                    stack[sp] = -stack[sp];
-                }
+                if (sp >= 0) stack[sp] = -stack[sp];
             }
             else if (tok.op == OpType::BitNot) {
-                if (sp >= 0) {
-                    stack[sp] = (double)(~(int64_t)stack[sp]);
-                }
+                if (sp >= 0) stack[sp] = (double)(~(int64_t)stack[sp]);
             }
             else if (tok.op == OpType::Assign) {
                 if (sp >= 1) {
                     double val = stack[sp--];
                     double ptr = stack[sp];
                     int idx = (int)ptr;
-                    if (idx >= 0 && idx < memory.size()) {
-                        const_cast<std::vector<double>&>(memory)[idx] = val;
-                    }
+                    if (idx >= 0 && idx < memory.size()) const_cast<std::vector<double>&>(memory)[idx] = val;
                     stack[sp] = val;
                 }
             }
@@ -421,15 +412,9 @@ int BytebeatExpression::Eval(uint32_t t) const {
 
                     if (tId >= ARRAY_ID_OFFSET) {
                         int arrIdx = tId - ARRAY_ID_OFFSET;
-                        if (arrIdx >= 0 && arrIdx < g_arrays.size()) {
-                            len = (int)g_arrays[arrIdx].size();
-                        }
+                        if (arrIdx >= 0 && arrIdx < g_arrays.size()) len = (int)g_arrays[arrIdx].size();
                     }
-                    else {
-                        if (tId >= 0 && tId < g_strings.size()) {
-                            len = (int)g_strings[tId].size();
-                        }
-                    }
+                    else if (tId >= 0 && tId < g_strings.size()) len = (int)g_strings[tId].size();
                     stack[sp] = (double)len;
                 }
             }
@@ -444,32 +429,20 @@ int BytebeatExpression::Eval(uint32_t t) const {
                         if (arrIndex >= 0 && arrIndex < g_arrays.size()) {
                             const vector<double>& arr = g_arrays[arrIndex];
                             int i = (int)idxVal;
-                            if (i >= 0 && i < arr.size()) {
-                                stack[sp] = arr[i];
-                            }
-                            else {
-                                stack[sp] = 0;
-                            }
+                            if (i >= 0 && i < arr.size()) stack[sp] = arr[i];
+                            else stack[sp] = 0;
                         }
-                        else {
-                            stack[sp] = 0;
-                        }
+                        else stack[sp] = 0;
                     }
                     else {
                         if (tId >= 0 && tId < g_strings.size()) {
                             const string& s = g_strings[tId];
                             int i = (int)idxVal;
                             // FIX: Cast to unsigned char to avoid negative numbers for special chars
-                            if (i >= 0 && i < s.size()) {
-                                stack[sp] = (double)(unsigned char)s[i];
-                            }
-                            else {
-                                stack[sp] = 0;
-                            }
+                            if (i >= 0 && i < s.size()) stack[sp] = (double)(unsigned char)s[i];
+                            else stack[sp] = 0;
                         }
-                        else {
-                            stack[sp] = 0;
-                        }
+                        else stack[sp] = 0;
                     }
                 }
             }
@@ -607,9 +580,10 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
                         bool logic = false;
                         if (i > 0 && 
                             (segment[i - 1] == '!' ||
-                                segment[i - 1] == '<' ||  
-                                    segment[i - 1] == '>')) 
+                            segment[i - 1] == '<' ||
+                            segment[i - 1] == '>')) 
                             logic = true;
+
                         if (i + 1 < segment.size() && segment[i + 1] == '=') logic = true;
                         if (!logic) { 
                             isAssign = true; 
@@ -620,7 +594,6 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
                 }
             }
         }
-
         int localEp = -1;
 
         if (isAssign) {

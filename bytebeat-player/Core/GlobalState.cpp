@@ -5,8 +5,7 @@
 AppState state;
 
 AppState::AppState() {
-    const char* defaultCode = "t*((-1-t*(6+((t^t/4&t/2)>>12&3))/6&255)>=(t/256&127))/128%256/3+t*(6+(t>>18&3))/12%256/4+((2<<17)/(t%(1<<15))&128)/2+((t-t/256)%256/4+(t+t/128)*7/6%256/4+(t*8/6+t/256)%256/4+(t*9/6-t/512)%256/4)*2/5";
-
+    const char* defaultCode = "";
     strncpy(inputBuf, defaultCode, sizeof(inputBuf) - 1);
     inputBuf[sizeof(inputBuf) - 1] = '\0';
 }

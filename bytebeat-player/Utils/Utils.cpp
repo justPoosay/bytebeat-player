@@ -125,7 +125,8 @@ void LoadCodeToEditor(string fullCode) {
     strncpy(state.inputBuf, viewCode.c_str(), sizeof(state.inputBuf) - 1);
 
     state.errorMsg.clear();
-    state.valid = (state.currentMode == AppState::BytebeatMode::C_Compatible)
+    state.valid = 
+        (state.currentMode == AppState::BytebeatMode::C_Compatible)
         ? state.expr.Compile(fullCode, state.errorMsg, state.errorPos)
         : state.complexEngine.Compile(fullCode, state.errorMsg, state.errorPos);
 
@@ -187,9 +188,11 @@ string FormatCode(const string& code, int maxChars) {
                 }
             }
 
-            auto n = splitIdx != -1
+            auto n = 
+                splitIdx != -1
                 ? splitIdx + 1
                 : maxChars;
+
             out << originalLine.substr(0, n) << "\n";
             originalLine = originalLine.substr(n);
         }

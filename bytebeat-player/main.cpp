@@ -129,15 +129,15 @@ int main() {
             state.valid = (state.currentMode == AppState::BytebeatMode::C_Compatible)
                 ? state.expr.Compile(realCode, state.errorMsg, state.errorPos)
                 : state.complexEngine.Compile(realCode, state.errorMsg, state.errorPos);
+
             UpdateErrorMarkers();
         }
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(viewport->ID, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
+        bool layoutUpdateNeeded = firstFrame || IsWindowResized() || IsKeyPressed(KEY_F11);
 
-        if (firstFrame || IsWindowResized() || IsKeyPressed(KEY_F11)) {
-            firstFrame = false;
-
+        if (layoutUpdateNeeded) {
             ImGui::DockBuilderRemoveNode(dockspace_id);
             ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
             ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
@@ -160,6 +160,35 @@ int main() {
             ImGui::DockBuilderFinish(dockspace_id);
         }
 
+        // Load preset
+        if (firstFrame) {
+            firstFrame = false;
+
+            const char* targetPresetName = "Haschenparty Ambience Pad";
+            for (const auto& preset : g_presets) {
+                if (preset.title == targetPresetName) {
+                    state.currentMode = 
+                        (preset.mode == PresetMode::Classic)
+                        ? AppState::BytebeatMode::C_Compatible
+                        : AppState::BytebeatMode::JS_Compatible;
+
+                    LoadCodeToEditor(preset.code);
+                    state.playing = false;
+
+                    bool foundRate = false;
+                    for (int i = 0; i < 7; i++) {
+                        if (state.rates[i] == preset.sampleRate) {
+                            state.rateIdx = i;
+                            foundRate = true;
+                            break;
+                        }
+                    }
+                    if (!foundRate) state.rateIdx = 0;
+                    break;
+                }
+            }
+        }
+
         // --- EDITOR WINDOW ---
         ImGui::Begin("Editor");
         state.editor.Render("TextEditor", ImVec2(0, -60));
@@ -174,6 +203,7 @@ int main() {
 
         const char* modeNames[] = { "Classic (C)", "Javascript (JS)" };
         int currentModeIdx = (state.currentMode == AppState::BytebeatMode::C_Compatible) ? 0 : 1;
+
         ImGui::SetNextItemWidth(250.0f);
         if (ImGui::BeginCombo("##EngineMode", modeNames[currentModeIdx])) {
             for (int i = 0; i < 2; i++) {
@@ -257,9 +287,6 @@ int main() {
 
         // --- PRESETS WINDOW ---
         ImGui::Begin("Presets");
-        ImGui::TextDisabled("Click on a code to load it into the editor:");
-        ImGui::Separator();
-
         if (ImGui::BeginChild("PresetList")) {
             for (const auto& preset : g_presets) {
                 ImGui::PushID(preset.title.c_str());
@@ -274,6 +301,7 @@ int main() {
                         preset.mode == PresetMode::Classic
                         ? AppState::BytebeatMode::C_Compatible
                         : AppState::BytebeatMode::JS_Compatible;
+
                     LoadCodeToEditor(preset.code);
 
                     // Auto-select sample rate
