@@ -141,28 +141,34 @@ int main() {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(viewport->ID, viewport, ImGuiDockNodeFlags_PassthruCentralNode);
 
+        // Sprawdzamy: Pierwsza klatka LUB zmiana rozmiaru okna LUB wciśnięcie F11
         if (firstFrame || IsWindowResized() || IsKeyPressed(KEY_F11)) {
             firstFrame = false;
 
+            // Czyścimy stary układ
             ImGui::DockBuilderRemoveNode(dockspace_id);
             ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
             ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
 
-            // GRID 2X2
+            // --- TWORZENIE UKŁADU 2x2 ---
 
+            // 1. Dzielimy ekran na PÓŁ w pionie (Lewa / Prawa)
             ImGuiID dock_right_id;
             ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.5f, NULL, &dock_right_id);
 
-            ImGuiID dock_settings_id;
+            // 2. Dzielimy LEWĄ stronę na pół w poziomie (Góra: Editor / Dół: Settings)
+            ImGuiID dock_settings_id; // Dół
             ImGuiID dock_editor_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.5f, NULL, &dock_settings_id);
 
-            ImGuiID dock_oscilloscope_id;
+            // 3. Dzielimy PRAWĄ stronę na pół w poziomie (Góra: Presets / Dół: Oscilloscope)
+            ImGuiID dock_oscilloscope_id; // Dół
             ImGuiID dock_presets_id = ImGui::DockBuilderSplitNode(dock_right_id, ImGuiDir_Up, 0.5f, NULL, &dock_oscilloscope_id);
 
-            ImGui::DockBuilderDockWindow("Editor", dock_editor_id);
-            ImGui::DockBuilderDockWindow("Settings", dock_settings_id);
-            ImGui::DockBuilderDockWindow("Presets", dock_presets_id);
-            ImGui::DockBuilderDockWindow("Oscilloscope", dock_oscilloscope_id);
+            // 4. Przypisujemy okna do konkretnych ćwiartek
+            ImGui::DockBuilderDockWindow("Editor", dock_editor_id);           // Lewy Górny
+            ImGui::DockBuilderDockWindow("Settings", dock_settings_id);       // Lewy Dolny
+            ImGui::DockBuilderDockWindow("Presets", dock_presets_id);         // Prawy Górny
+            ImGui::DockBuilderDockWindow("Oscilloscope", dock_oscilloscope_id); // Prawy Dolny
 
             ImGui::DockBuilderFinish(dockspace_id);
         }
