@@ -16,7 +16,6 @@
 // Modules
 #include "Bytebeat.h"
 #include "GlobalState.h"
-#include "Presets.h"
 #include "AudioSystem.h"
 #include "Utils.h"
 
@@ -34,11 +33,13 @@
 using namespace std;
 
 int main() {
+    // Init Window
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(1280, 720, "Bytebeat Composer C++");
     SetTargetFPS(144);
     InitAudioDevice();
 
+    // Init Icon
     Image icon = LoadImageFromMemory(".png", icon_png, icon_png_len);
     if (icon.data != NULL) {
         ImageFormat(&icon, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
@@ -46,25 +47,26 @@ int main() {
         UnloadImage(icon);
     }
 
+    // Init Audio Stream
     AudioStream stream = LoadAudioStream(44100, 16, 1);
     SetAudioStreamCallback(stream, MyAudioCallback);
     PlayAudioStream(stream);
 
+    // Init Presets
+    LoadPresets("Presets");
+
     // Init Editor
     auto lang = TextEditor::LanguageDefinition::C();
-
     static const char* const keywords[] = {
         "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh", 
         "exp", "log", "log10", "pow", "sqrt", 
         "ceil", "floor", "fmod", "round"
     };
-
     for (auto& k : keywords) {
         TextEditor::Identifier id;
         id.mDeclaration = "Built-in function";
         lang.mIdentifiers.insert(make_pair(string(k), id));
     }
-
     TextEditor::Identifier idT;
     idT.mDeclaration = "Time variable";
     lang.mIdentifiers.insert(make_pair("t", idT));
@@ -74,7 +76,6 @@ int main() {
     // Init Compile
     state.valid = state.expr.Compile(state.inputBuf, state.errorMsg, state.errorPos);
     UpdateErrorMarkers();
-
     rlImGuiSetup(true);
 
     ImGuiIO& io = ImGui::GetIO();
@@ -90,7 +91,6 @@ int main() {
     int currentThemeIdx = 4;
     ApplyTheme(currentThemeIdx);
     const char* themeNames[] = { "Dark", "Light", "Classic", "Matrix Green", "Deep Ocean" };
-
 
     while (!WindowShouldClose()) {
         if (!io.WantCaptureKeyboard && IsKeyPressed(KEY_ENTER)) state.playing = !state.playing;
@@ -412,6 +412,7 @@ int main() {
         }
 
         rlImGuiEnd();
+        DrawFPS(GetScreenWidth() - 85, 5);
         EndDrawing();
     }
 

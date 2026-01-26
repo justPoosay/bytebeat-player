@@ -2,8 +2,9 @@
 #include "GlobalState.h"
 #include <cstring>
 
-AppState state;
+std::vector<BytebeatPreset> g_presets;
 
+AppState state;
 AppState::AppState() {
     const char* defaultCode = "";
     strncpy(inputBuf, defaultCode, sizeof(inputBuf) - 1);

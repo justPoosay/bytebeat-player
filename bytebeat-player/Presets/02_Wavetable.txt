@@ -1,0 +1,5 @@
+﻿Title=charCodeAt wavetable synth
+Rate=44100
+Mode=Complex
+Code=
+'üöä§$$$$'.charCodeAt(3*t>>6&7)

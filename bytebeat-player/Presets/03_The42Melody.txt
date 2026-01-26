@@ -1,0 +1,5 @@
+﻿Title=The 42 melody
+Rate=8000
+Mode=Classic
+Code=
+t*(42&t>>10)

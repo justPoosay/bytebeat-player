@@ -77,6 +77,8 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -96,17 +98,20 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
-      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>
+      </EnableCOMDATFolding>
+      <OptimizeReferences>false</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Vendor\raylib\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <LinkTimeCodeGeneration />
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -116,6 +121,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,24 +143,26 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)Core;$(ProjectDir)Utils;$(ProjectDir)Vendor\ImGui;$(ProjectDir)Vendor\rlImGui;$(ProjectDir)Vendor\TextEditor;$(ProjectDir)Vendor\raylib\include;$(ProjectDir)Resources</AdditionalIncludeDirectories>
-      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>
+      </EnableCOMDATFolding>
+      <OptimizeReferences>false</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)Vendor\raylib\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>raylib.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <LinkTimeCodeGeneration />
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\AudioSystem.cpp" />
     <ClCompile Include="Core\Bytebeat.cpp" />
     <ClCompile Include="Core\GlobalState.cpp" />
-    <ClCompile Include="Core\Presets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utils\Utils.cpp" />
     <ClCompile Include="Vendor\ImGui\imgui.cpp" />
@@ -167,7 +176,6 @@
     <ClInclude Include="Core\AudioSystem.h" />
     <ClInclude Include="Core\Bytebeat.h" />
     <ClInclude Include="Core\GlobalState.h" />
-    <ClInclude Include="Core\Presets.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Resources\icon_data.h" />
     <ClInclude Include="Utils\Utils.h" />
@@ -195,6 +203,26 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Presets\01_Haschenparty.txt" />
+    <Text Include="Presets\02_Wavetable.txt" />
+    <Text Include="Presets\03_The42Melody.txt" />
+    <Text Include="Presets\04_SpaceEngine.txt" />
+    <Text Include="Presets\05_MeowingCat.txt" />
+    <Text Include="Presets\06_Neurofunk.txt" />
+    <Text Include="Presets\07_Explosions.txt" />
+    <Text Include="Presets\08_Siren.txt" />
+    <Text Include="Presets\09_WeirdTransition.txt" />
+    <Text Include="Presets\10_MinimalSierpinsky.txt" />
+    <Text Include="Presets\11_SierpinskyHarmony.txt" />
+    <Text Include="Presets\12_LostInSpace.txt" />
+    <Text Include="Presets\13_Stimmer.txt" />
+    <Text Include="Presets\14_FractalMelody.txt" />
+    <Text Include="Presets\15_FractalizedPast.txt" />
+    <Text Include="Presets\16_StressSignal.txt" />
+    <Text Include="Presets\17_RandomNoteGenerator.txt" />
+    <Text Include="Presets\18_RandomNoteGenerator2.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,4 +1,5 @@
 ﻿#pragma once
+//#include "GlobalState.h"
 #include <cstdint>
 #include <string>
 
@@ -6,6 +7,7 @@ void ApplyTheme(int themeIdx);
 void UpdateErrorMarkers();
 void ExportToWav();
 void LoadCodeToEditor(std::string fullCode);
+void LoadPresets(const std::string& folderPath);
 
 uint32_t FindTrigger(uint32_t currentT);
 

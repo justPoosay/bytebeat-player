@@ -10,8 +10,11 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <fstream>
+#include <filesystem>
 
 using namespace std;
+namespace fs = filesystem;
 
 void ApplyTheme(int themeIdx) {
     ImGuiStyle& style = ImGui::GetStyle();
@@ -135,6 +138,95 @@ void LoadCodeToEditor(string fullCode) {
     state.tAccum = 0.0;
     state.rateIdx = 4;
     state.playing = true;
+}
+
+// Helper function to remove white characters (CR, LF, Spaces)
+static string TrimRight(string s) {
+    s.erase(find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !isspace(ch);
+        }).base(), s.end()
+    );
+    return s;
+}
+
+// Helper function to remove BOM (Byte Order Mark)
+static string RemoveBOM(string s) {
+    if (s.size() >= 3 && 
+        (unsigned char)s[0] == 0xEF && 
+        (unsigned char)s[1] == 0xBB && 
+        (unsigned char)s[2] == 0xBF) {
+        return s.substr(3);
+    }
+    return s;
+}
+
+void LoadPresets(const string& folderPath) {
+    g_presets.clear();
+
+    if (!fs::exists(folderPath)) {
+        TraceLog(LOG_ERROR, "PRESETS: Folder '%s' not found!", folderPath.c_str());
+        return;
+    }
+    TraceLog(LOG_INFO, "PRESETS: Scanning folder: %s", folderPath.c_str());
+
+    for (const auto& entry : fs::directory_iterator(folderPath)) {
+        string ext = entry.path().extension().string();
+        transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+        if (ext == ".txt") {
+            ifstream file(entry.path());
+            if (!file.is_open()) continue;
+
+            BytebeatPreset preset;
+            string line;
+            string accumulatedCode;
+            bool readingCode = false;
+            bool firstLine = true;
+
+            while (getline(file, line)) {
+                // Remove trash from endline
+                line = TrimRight(line);
+
+                // BOM fix for first line
+                if (firstLine) {
+                    line = RemoveBOM(line);
+                    firstLine = false;
+                }
+
+                if (readingCode) {
+                    accumulatedCode += line + "\n";
+                    continue;
+                }
+                if (line.find("Code=") == 0) {
+                    readingCode = true;
+                    if (line.length() > 5) accumulatedCode += line.substr(5) + "\n";
+                }
+                else if (line.find("Title=") == 0) preset.title = line.substr(6);
+                else if (line.find("Rate=") == 0) {
+                    try {
+                        preset.sampleRate = stoi(line.substr(5));
+                    }
+                    catch (...) { 
+                        preset.sampleRate = 8000; 
+                    }
+                }
+                else if (line.find("Mode=") == 0) {
+                    string m = line.substr(5);
+                    if (m == "Complex") preset.mode = PresetMode::Complex;
+                    else preset.mode = PresetMode::Classic;
+                }
+            }
+
+            preset.code = accumulatedCode;
+            if (!preset.code.empty() && preset.code.back() == '\n') preset.code.pop_back();
+
+            if (!preset.title.empty() && !preset.code.empty()) {
+                g_presets.push_back(preset);
+                TraceLog(LOG_INFO, "PRESETS: Loaded '%s'", preset.title.c_str());
+            }
+            else TraceLog(LOG_WARNING, "PRESETS: Skipped file '%s' (Missing Title or Code)", entry.path().filename().string().c_str());
+        }
+    }
 }
 
 uint32_t FindTrigger(uint32_t currentT) {

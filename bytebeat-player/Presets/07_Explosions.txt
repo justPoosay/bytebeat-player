@@ -1,0 +1,5 @@
+﻿Title=Explosions
+Rate=8000
+Mode=Classic
+Code=
+(t>>2)*(t>>5)|t>>5

@@ -33,16 +33,18 @@ This project is built using Visual Studio 2022.
 - [ ] Merge Classic (C) and Javascript (JS) engines
 - [ ] Improve Editor window (relocate Zoom/Engine/Format buttons to Settings window)
 - [ ] Update `ExportToWav()` to include user input for exported sample length (currently fixed at 30s)
-- [ ] Move presets from Presets.cpp to separate .txt file for each preset
 - [ ] Expand Sample Rate list to accept custom sample rate input
 - [ ] Add expandable categories (sub-lists) in the Presets window
+- [ ] Add button for creating custom presets to folder
+- [ ] Bad Apple XD
 ### Completed
-- [x] ~~add charCodeAt (for "importing" wav songs)~~
-- [x] ~~fix underlining line with error to work for both Classic and Javascript modes~~
-- [x] ~~add function .length (for fetching data string length for charCodeAt)~~
-- [x] ~~add `ConvertWavToBytebeat()` for dragging .wav to editor and converting it to HEX string with charCodeAt formula~~
-- [x] ~~fix ImGui window proportions for fullscreen mode~~
+- [x] ~~Move presets from Presets.cpp to separate .txt file for each preset~~
 - [x] ~~change converted audio format from 8000Hz to 32000Hz in `ConvertWavToBytebeat()`~~
+- [x] ~~add charCodeAt (for "importing" wav songs)~~
+- [x] ~~fix ImGui window proportions for fullscreen mode~~
+- [x] ~~fix underlining line with error to work for both Classic and Javascript modes~~
+- [x] ~~add `ConvertWavToBytebeat()` for dragging .wav to editor and converting it to HEX string with charCodeAt formula~~
+- [x] ~~add function .length (for fetching data string length for charCodeAt)~~
 
 ## License
 This project is open-source. Feel free to modify and distribute.

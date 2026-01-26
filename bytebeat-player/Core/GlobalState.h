@@ -1,8 +1,28 @@
 ﻿#pragma once
-#include <string>
 #include "Bytebeat.h"
 #include "TextEditor.h"
+#include <string>
+#include <vector>
 #include <map>
+
+enum class PresetMode {
+    Classic,
+    Complex
+};
+
+struct BytebeatPreset {
+    std::string title;
+    std::string code;
+    int sampleRate;
+    PresetMode mode;
+
+    BytebeatPreset() : title(""), code(""), sampleRate(8000), mode(PresetMode::Classic) {}
+    //BytebeatPreset(std::string t, std::string c, int sr = 8000, PresetMode m = PresetMode::Classic)
+    //    : title(t), code(c), sampleRate(sr), mode(m) {
+    //}
+};
+
+extern std::vector<BytebeatPreset> g_presets;
 
 struct AppState {
     // Logic
