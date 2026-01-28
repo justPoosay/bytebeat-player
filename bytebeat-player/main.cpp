@@ -36,7 +36,7 @@ int main() {
     // Init Window
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(1280, 720, "Bytebeat Composer C++");
-    SetTargetFPS(144);
+    SetTargetFPS(0);
     InitAudioDevice();
 
     // Init Icon

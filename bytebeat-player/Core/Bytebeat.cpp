@@ -15,9 +15,9 @@ using namespace std;
 static const int ARRAY_ID_OFFSET = 200000;
 
 // Globals (move to other file later)
-static std::vector<std::string> g_strings;
-static std::vector<std::vector<double>> g_arrays;
-static std::recursive_mutex g_bytebeatMutex;
+static vector<string> g_strings;
+static vector<vector<double>> g_arrays;
+static recursive_mutex g_bytebeatMutex;
 
 static int getPrecedence(OpType op) {
     switch (op) {
@@ -34,7 +34,7 @@ static int getPrecedence(OpType op) {
 }
 
 bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPos) {
-    std::lock_guard<std::recursive_mutex> lock(g_bytebeatMutex);
+    lock_guard<recursive_mutex> lock(g_bytebeatMutex);
 
     error.clear();
     errorPos = -1;
@@ -134,14 +134,14 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                     }
                     else {
                         switch (nextC) {
-                        case '0': s += '\0'; break;
-                        case 'n': s += '\n'; break;
-                        case 'r': s += '\r'; break;
-                        case 't': s += '\t'; break;
-                        case '\\': s += '\\'; break;
-                        case '\'': s += '\''; break;
-                        case '"': s += '"'; break;
-                        default: s += nextC; break;
+                            case '0': s += '\0'; break;
+                            case 'n': s += '\n'; break;
+                            case 'r': s += '\r'; break;
+                            case 't': s += '\t'; break;
+                            case '\\': s += '\\'; break;
+                            case '\'': s += '\''; break;
+                            case '"': s += '"'; break;
+                            default: s += nextC; break;
                         }
                         i++;
                     }
@@ -218,9 +218,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
             }
 
             if ((expr[i] == '-' || expr[i] == '!') && expectUnary) {
-                tokens.emplace_back(expr[i] == '-' 
-                    ? OpType::Neg 
-                    : OpType::BitNot, start);
+                tokens.emplace_back(expr[i] == '-' ? OpType::Neg : OpType::BitNot, start);
                 i++;
             }
             else {
@@ -310,7 +308,7 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
                 while (!stack.empty() && stack.back().type != TokType::LParen) {
                     int topPrec = (stack.back().type == TokType::Fun) 
                         ? 12 : (stack.back().type == TokType::Op && 
-                            (stack.back().op == OpType::Neg || stack.back().op == OpType::BitNot))
+                        (stack.back().op == OpType::Neg || stack.back().op == OpType::BitNot))
                         ? 12 : getPrecedence(stack.back().op);
 
                     if (topPrec < prec) break;
@@ -340,14 +338,14 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
 }
 
 int BytebeatExpression::Eval(uint32_t t) const {
-    std::lock_guard<std::recursive_mutex> lock(g_bytebeatMutex);
+    lock_guard<recursive_mutex> lock(g_bytebeatMutex);
 
     if (m_rpn.empty()) return 0;
     double stack[1024];
     int sp = -1;
 
     // Cache index to memory
-    const std::vector<double>& memory = state.vmMemory;
+    const vector<double>& memory = state.vmMemory;
 
     for (const auto& tok : m_rpn) {
         if (sp >= 1023) break; // Security
@@ -400,7 +398,7 @@ int BytebeatExpression::Eval(uint32_t t) const {
                     double val = stack[sp--];
                     double ptr = stack[sp];
                     int idx = (int)ptr;
-                    if (idx >= 0 && idx < memory.size()) const_cast<std::vector<double>&>(memory)[idx] = val;
+                    if (idx >= 0 && idx < memory.size()) const_cast<vector<double>&>(memory)[idx] = val;
                     stack[sp] = val;
                 }
             }
@@ -483,8 +481,8 @@ int BytebeatExpression::Eval(uint32_t t) const {
     return (sp >= 0) ? ((int)stack[0] & 0xFF) : 0;
 }
 
-bool ComplexEngine::Compile(const std::string& code, std::string& err, int& errorPos) {
-    std::lock_guard<std::recursive_mutex> lock(g_bytebeatMutex);
+bool ComplexEngine::Compile(const string& code, string& err, int& errorPos) {
+    lock_guard<recursive_mutex> lock(g_bytebeatMutex);
 
     instructions.clear();
     g_strings.clear();
@@ -601,7 +599,7 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
             string varName = segment.substr(0, assignPos);
 
             varName.erase(remove_if(varName.begin(), varName.end(), [](char c) {
-                return std::isspace(static_cast<unsigned char>(c));
+                return isspace(static_cast<unsigned char>(c));
             }), varName.end());
 
             // Get index for allocated variable
@@ -625,7 +623,7 @@ bool ComplexEngine::Compile(const std::string& code, std::string& err, int& erro
 }
 
 int ComplexEngine::Eval(uint32_t t) {
-    std::lock_guard<std::recursive_mutex> lock(g_bytebeatMutex);
+    lock_guard<recursive_mutex> lock(g_bytebeatMutex);
 
     double lastVal = 0;
     for (auto& ins : instructions) {
