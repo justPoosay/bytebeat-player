@@ -33,6 +33,7 @@ This project is built using Visual Studio 2022.
 - [ ] Merge Classic (C) and Javascript (JS) engines
 - [ ] Improve Editor window (relocate Zoom/Engine/Format buttons to Settings window)
 - [ ] Update `ExportToWav()` to include user input for exported sample length (currently fixed at 30s)
+- [ ] Expand Editor (input box) to accept comments (// ...)
 - [ ] Expand Sample Rate list to accept custom sample rate input
 - [ ] Add expandable categories (sub-lists) in the Presets window
 - [ ] Add button for creating custom presets to folder
