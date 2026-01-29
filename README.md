@@ -30,6 +30,7 @@ This project is built using Visual Studio 2022.
 
 ## ToDo List
 ### Pending
+- [ ] Schnuffel Haschenparty: fix "t%=1451520" so that it works correctly
 - [ ] Merge Classic (C) and Javascript (JS) engines
 - [ ] Improve Editor window (relocate Zoom/Engine/Format buttons to Settings window)
 - [ ] Update `ExportToWav()` to include user input for exported sample length (currently fixed at 30s)
