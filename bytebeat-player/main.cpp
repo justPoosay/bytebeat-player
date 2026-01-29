@@ -164,7 +164,7 @@ int main() {
         if (firstFrame) {
             firstFrame = false;
 
-            const char* targetPresetName = "Haschenparty Ambience Pad";
+            const char* targetPresetName = "Schnuffel Haschenparty";
             for (const auto& preset : g_presets) {
                 if (preset.title == targetPresetName) {
                     state.currentMode = 
