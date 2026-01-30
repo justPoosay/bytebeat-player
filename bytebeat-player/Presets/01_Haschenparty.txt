@@ -8,29 +8,32 @@ ambiencePad='BDAFFDDDBDAFFDDDFHDIKHHHFHDIKHIIIKHMNKMMIKHMNKMM',
 superSaw='N.N.U.UK.KP.K.P.M.M.T.TR.RY.R.Y.R.R.Z.ZP.PW.P.W.P.P.W.WR.RY.W.Y.N.N.U.UK.KP.K.P.M.M.T.TR.RY.R.Y.R.R.Z.ZP.PW.P.W.P.P.W.WR.RY.W.Y.N.N.U.UK.KP.K.P.M.M.T.TR.RY.R.Y.R.R.Z.ZP.PW.P.W.P.P.W.WR.RY.W.Y.N.N.U.UK.KP.K.P.M.M.T.TR.RY.R.Y.R.R.Z.ZP.PW.P.W.P.P.U.UP.PU.P.U.',
 sinePlucks='d.dd.dd.f.ff.ff.c.cc.cc.h.h.f.h.d.dd.dd.f.ff.ff.c.cc.cc.h.h.f.h.d.dd.dd.f.ff.ff.c.cc.cc.h.h.f.h.d.dd.dd.f.ff.ff.c.cc.cc.c.c.a.c.d.dd.dd.f.ff.ff.c.cc.cc.h.h.f.h.d.dd.dd.f.ff.ff._.__.__._._.a.c.',
 
-t%=1451520,
-
 128 +
 (
- data.charCodeAt(t*pow(2,(ambiencePad.charCodeAt((t/3780>>3)&15)-65)/12)%data.length)+
- data.charCodeAt(t*pow(2,(ambiencePad.charCodeAt(((t/3780>>3)&15)+16)-65)/12)%data.length)+
- data.charCodeAt(t*pow(2,(ambiencePad.charCodeAt(((t/3780>>3)&15)+32)-65)/12)%data.length)
+ data.charCodeAt((t%1451520)*pow(2,(ambiencePad.charCodeAt(((t%1451520)/3780>>3)&15)-65)/12)%data.length)+
+ data.charCodeAt((t%1451520)*pow(2,(ambiencePad.charCodeAt((((t%1451520)/3780>>3)&15)+16)-65)/12)%data.length)+
+ data.charCodeAt((t%1451520)*pow(2,(ambiencePad.charCodeAt((((t%1451520)/3780>>3)&15)+32)-65)/12)%data.length)
  -384
 )
 +
-(t>483840 ? (
- superSaw.charCodeAt(((t-483840)/3780)&255)>46 ? (
-  ((t-483840)*1.5625*pow(2,(superSaw.charCodeAt(((t-483840)/3780)&255)-65)/12)%255)+
-  ((t-483840)*1.58*pow(2,(superSaw.charCodeAt(((t-483840)/3780)&255)-65)/12)%255)+
-  ((t-483840)*1.545*pow(2,(superSaw.charCodeAt(((t-483840)/3780)&255)-65)/12)%255)-384
- )*0.15 : 0
-) : 0)
+(
+ (t%1451520)>483840?(
+  superSaw.charCodeAt((((t%1451520)-483840)/3780)&255)>46?(
+   (((t%1451520)-483840)*1.5625*pow(2,(superSaw.charCodeAt((((t%1451520)-483840)/3780)&255)-65)/12)%255)+
+   (((t%1451520)-483840)*1.58*pow(2,(superSaw.charCodeAt((((t%1451520)-483840)/3780)&255)-65)/12)%255)+
+   (((t%1451520)-483840)*1.545*pow(2,(superSaw.charCodeAt((((t%1451520)-483840)/3780)&255)-65)/12)%255)-384
+  )*0.12:0
+ ):0
+)
 +
-(t>489840 ? (superSaw.charCodeAt(((t-489840)/3780)&255)>46?(((t-489840)*1.5625*pow(2,(superSaw.charCodeAt(((t-489840)/3780)&255)-65)/12)%255)-128)*0.0375:0):0)+
-(t>495840 ? (superSaw.charCodeAt(((t-495840)/3780)&255)>46?(((t-495840)*1.5625*pow(2,(superSaw.charCodeAt(((t-495840)/3780)&255)-65)/12)%255)-128)*0.01875:0):0)+
-(t>725760 ? (
- sinePlucks.charCodeAt(((t-725760)/3780)&255)>46 ? (
-  (sin(t*0.0514*pow(2,(sinePlucks.charCodeAt(((t-725760)/3780)&255)-97)/12))*191) *
-  (pow(1-(t%3780)/3780,0.6) * (((t%3780)/50)<1 ? ((t%3780)/50) : 1) )
- )*0.3 : 0
-) : 0)
+((t%1451520)>489840?(superSaw.charCodeAt((((t%1451520)-489840)/3780)&255)>46?((((t%1451520)-489840)*1.5625*pow(2,(superSaw.charCodeAt((((t%1451520)-489840)/3780)&255)-65)/12)%255)-128)*0.03:0):0)+
+((t%1451520)>495840 ? (superSaw.charCodeAt((((t%1451520)-495840)/3780)&255)>46?((((t%1451520)-495840)*1.5625*pow(2,(superSaw.charCodeAt((((t%1451520)-495840)/3780)&255)-65)/12)%255)-128)*0.015:0):0)
++
+(
+ (t%1451520)>725760?(
+  sinePlucks.charCodeAt((((t%1451520)-725760)/3780)&255)>46?(
+   (sin((t%1451520)*0.0514*pow(2,(sinePlucks.charCodeAt((((t%1451520)-725760)/3780)&255)-97)/12))*191)*
+   (pow(1-((t%1451520)%3780)/3780,0.6)*((((t%1451520)%3780)/50)<1?(((t%1451520)%3780)/50):1))
+  )*0.2:0
+ ):0
+)
