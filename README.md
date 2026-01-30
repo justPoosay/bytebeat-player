@@ -32,7 +32,9 @@ This project is built using Visual Studio 2022.
 ### Pending
 - [ ] Merge Classic (C) and Javascript (JS) engines
 - [ ] Improve Editor window (relocate Zoom/Engine/Format buttons to Settings window)
+- [ ] Fix `ExportToWav()` (exports silent audio with some shooting noises)
 - [ ] Update `ExportToWav()` to include user input for exported sample length (currently fixed at 30s)
+- [ ] Update `CompressCode()` to allow multiple data strings with converted .wav
 - [ ] Expand Editor (input box) to accept comments (// ...)
 - [ ] Fix formatter to not affect lines with string variables (ones used by charCodeAt)
 - [ ] Expand Sample Rate list to accept custom sample rate input

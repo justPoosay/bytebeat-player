@@ -32,6 +32,9 @@
     <Filter Include="Vendor\rlImGui\extras">
       <UniqueIdentifier>{b0eec00e-440c-4b09-9044-3b93ed49b134}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Presets">
+      <UniqueIdentifier>{11d609ec-a076-44d1-8922-b76524f9c804}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -44,9 +47,6 @@
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Core\GlobalState.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Presets.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Utils\Utils.cpp">
@@ -79,9 +79,6 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\GlobalState.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Presets.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Resources\icon_data.h">
@@ -151,5 +148,61 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Presets\01_Haschenparty.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\02_Wavetable.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\03_The42Melody.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\04_SpaceEngine.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\05_MeowingCat.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\06_Neurofunk.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\07_Explosions.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\08_Siren.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\09_WeirdTransition.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\10_MinimalSierpinsky.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\11_SierpinskyHarmony.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\12_LostInSpace.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\13_Stimmer.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\14_FractalMelody.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\15_FractalizedPast.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\16_StressSignal.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\17_RandomNoteGenerator.txt">
+      <Filter>Presets</Filter>
+    </Text>
+    <Text Include="Presets\18_RandomNoteGenerator2.txt">
+      <Filter>Presets</Filter>
+    </Text>
   </ItemGroup>
 </Project>
