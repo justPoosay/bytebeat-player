@@ -34,6 +34,13 @@ struct AppState {
     // Quick access
     std::vector<double> vmMemory;
     std::map<std::string, int> varTable;
+
+    // Helper: Reset VM state before compilation
+    void resetVM() {
+        vmMemory.clear();
+        varTable.clear();
+    }
+
     std::map<std::string, std::string> hiddenChunks;
     int hiddenCounter = 0;
 
@@ -42,13 +49,13 @@ struct AppState {
         if (varTable.find(name) == varTable.end()) {
             int id = (int)vmMemory.size();
             varTable[name] = id;
-            vmMemory.push_back(0.0);
+            vmMemory.push_back(0.0); // Init with 0
             return id;
         }
         return varTable[name];
     }
 
-    std::map<std::string, double> jsVars;
+    std::map<std::string, double> jsVars; // (Optional/Legacy?)
     TextEditor editor;
     bool playing = false;
     bool valid = false;

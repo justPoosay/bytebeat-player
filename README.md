@@ -40,6 +40,7 @@ This project is built using Visual Studio 2022.
 - [ ] Add button for creating custom presets to folder
 - [ ] Bad Apple XD
 ### Completed
+- [x] ~~Fix compiler to accept variables in formula~~
 - [x] Schnuffel Haschenparty: fix "t%=1451520" so that it works correctly
 - [x] ~~Move presets from Presets.cpp to separate .txt file for each preset~~
 - [x] ~~change converted audio format from 8000Hz to 32000Hz in `ConvertWavToBytebeat()`~~

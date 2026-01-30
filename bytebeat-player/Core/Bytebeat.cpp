@@ -337,10 +337,10 @@ bool BytebeatExpression::Compile(const string& expr, string& error, int& errorPo
     return true;
 }
 
-int BytebeatExpression::Eval(uint32_t t) const {
+double BytebeatExpression::Eval(uint32_t t) const {
     lock_guard<recursive_mutex> lock(g_bytebeatMutex);
 
-    if (m_rpn.empty()) return 0;
+    if (m_rpn.empty()) return 0.0;
     double stack[1024];
     int sp = -1;
 
@@ -458,14 +458,14 @@ int BytebeatExpression::Eval(uint32_t t) const {
                 case OpType::Div: a = (b != 0) ? (a / b) : 0; break;
                 case OpType::Mod: a = (b != 0) ? fmod(a, b) : 0; break;
 
-                    // Binary operations
+                // Binary operations
                 case OpType::And: a = (double)(ia & ib); break;
                 case OpType::Or:  a = (double)(ia | ib); break;
                 case OpType::Xor: a = (double)(ia ^ ib); break;
                 case OpType::Shl: a = (double)(ia << (ib & 0x1F)); break;
                 case OpType::Shr: a = (double)(ia >> (ib & 0x1F)); break;
 
-                    // Logic operations
+                // Logic operations
                 case OpType::LT:  a = (a < b); break;
                 case OpType::GT:  a = (a > b); break;
                 case OpType::LE:  a = (a <= b); break;
@@ -478,11 +478,14 @@ int BytebeatExpression::Eval(uint32_t t) const {
             break;
         }
     }
-    return (sp >= 0) ? ((int)stack[0] & 0xFF) : 0;
+    return (sp >= 0) ? stack[0] : 0.0;
 }
 
 bool ComplexEngine::Compile(const string& code, string& err, int& errorPos) {
     lock_guard<recursive_mutex> lock(g_bytebeatMutex);
+
+    // Ensure that variables are reset and IDs are consistent
+    state.resetVM();
 
     instructions.clear();
     g_strings.clear();
@@ -624,11 +627,16 @@ bool ComplexEngine::Compile(const string& code, string& err, int& errorPos) {
 
 int ComplexEngine::Eval(uint32_t t) {
     lock_guard<recursive_mutex> lock(g_bytebeatMutex);
-
     double lastVal = 0;
+
+    // Check vmMemory size
+    const vector<double>& memory = state.vmMemory;
+
     for (auto& ins : instructions) {
         lastVal = ins.expr.Eval(t);
-        if (ins.type == Instruction::Type::AssignVar) state.vmMemory[ins.targetVarIdx] = lastVal;
+        if (ins.type == Instruction::Type::AssignVar &&
+            ins.targetVarIdx >= 0 && ins.targetVarIdx < memory.size()) 
+            state.vmMemory[ins.targetVarIdx] = lastVal;
     }
     return (int)((int32_t)lastVal & 0xFF);
 }

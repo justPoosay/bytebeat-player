@@ -23,10 +23,12 @@ void ApplyTheme(int themeIdx) {
         ImGui::StyleColorsDark();
         state.editor.SetPalette(TextEditor::GetDarkPalette());
         break;
-    case 1: ImGui::StyleColorsLight();
+    case 1: 
+        ImGui::StyleColorsLight();
         state.editor.SetPalette(TextEditor::GetLightPalette());
         break;
-    case 2: ImGui::StyleColorsClassic();
+    case 2: 
+        ImGui::StyleColorsClassic();
         break;
     case 3:
         ImGui::StyleColorsDark();
@@ -113,7 +115,6 @@ void ExportToWav() {
             tLocal += steps;
             tAccumLocal -= (double)steps;
         }
-
         if (i % 5000 == 0) state.exportProgress = (float)i / totalSamples;
     }
 
@@ -232,8 +233,8 @@ void LoadPresets(const string& folderPath) {
 uint32_t FindTrigger(uint32_t currentT) {
     const int searchRange = 1024;
     for (uint32_t i = 0; i < searchRange; i++) {
-        int valNow = state.expr.Eval(currentT + i) & 0xFF;
-        int valNext = state.expr.Eval(currentT + i + 1) & 0xFF;
+        int valNow = state.expr.Eval(currentT + i);
+        int valNext = state.expr.Eval(currentT + i + 1);
 
         if (valNow <= 2 && valNext > 2) return currentT + i;
     }

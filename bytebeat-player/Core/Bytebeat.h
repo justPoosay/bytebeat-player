@@ -28,7 +28,7 @@ struct Token {
 class BytebeatExpression {
 public:
     bool Compile(const std::string& expr, std::string& error, int& errorPos);
-    int Eval(uint32_t t) const;
+    double Eval(uint32_t t) const;
 private:
     std::vector<Token> m_rpn;
 };
