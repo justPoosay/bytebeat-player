@@ -79,14 +79,19 @@ void ExportToWav() {
         fileName += ".wav";
     }
 
-    state.fileName = fileName;
+    // Create Exports folder if not exists
+    if (!fs::exists("Exports")) {
+        fs::create_directory("Exports");
+    }
+
+    state.fileName = "Exports/" + fileName;
 
     const int exportRate = 44100;
     int targetRate = state.rates[state.rateIdx];
     uint32_t seconds = (state.exportDuration > 0) ? state.exportDuration : 30;
     uint32_t totalSamples = seconds * exportRate;
 
-    FILE* f = fopen(fileName.c_str(), "wb");
+    FILE* f = fopen(state.fileName.c_str(), "wb");
     if (!f) return;
 
     // HEADER WAV
@@ -110,9 +115,7 @@ void ExportToWav() {
     double tInc = (double)targetRate / (double)exportRate;
 
     for (uint32_t i = 0; i < totalSamples; i++) {
-        int v = (state.currentMode == AppState::BytebeatMode::C_Compatible)
-            ? state.expr.Eval(tLocal)
-            : state.complexEngine.Eval(tLocal);
+        int v = state.engine.Eval(tLocal);
         fputc((unsigned char)(v & 0xFF), f);
 
         tAccumLocal += tInc;
@@ -135,10 +138,7 @@ void LoadCodeToEditor(string fullCode) {
     strncpy(state.inputBuf, viewCode.c_str(), sizeof(state.inputBuf) - 1);
 
     state.errorMsg.clear();
-    state.valid = 
-        (state.currentMode == AppState::BytebeatMode::C_Compatible)
-        ? state.expr.Compile(fullCode, state.errorMsg, state.errorPos)
-        : state.complexEngine.Compile(fullCode, state.errorMsg, state.errorPos);
+    state.valid = state.engine.Compile(fullCode, state.errorMsg, state.errorPos);
 
     UpdateErrorMarkers();
     state.t = 0;
@@ -217,11 +217,6 @@ void LoadPresets(const string& folderPath) {
                         preset.sampleRate = 8000; 
                     }
                 }
-                else if (line.find("Mode=") == 0) {
-                    string m = line.substr(5);
-                    if (m == "Complex") preset.mode = PresetMode::Complex;
-                    else preset.mode = PresetMode::Classic;
-                }
             }
 
             preset.code = accumulatedCode;
@@ -239,8 +234,8 @@ void LoadPresets(const string& folderPath) {
 uint32_t FindTrigger(uint32_t currentT) {
     const int searchRange = 1024;
     for (uint32_t i = 0; i < searchRange; i++) {
-        int valNow = state.expr.Eval(currentT + i);
-        int valNext = state.expr.Eval(currentT + i + 1);
+        int valNow = state.engine.Eval(currentT + i);
+        int valNext = state.engine.Eval(currentT + i + 1);
 
         if (valNow <= 2 && valNext > 2) return currentT + i;
     }

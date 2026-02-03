@@ -74,7 +74,7 @@ int main() {
     state.editor.SetText(state.inputBuf);
 
     // Init Compile
-    state.valid = state.expr.Compile(state.inputBuf, state.errorMsg, state.errorPos);
+    state.valid = state.engine.Compile(state.inputBuf, state.errorMsg, state.errorPos);
     UpdateErrorMarkers();
     rlImGuiSetup(true);
 
@@ -103,7 +103,6 @@ int main() {
                 const char* filePath = droppedFiles.paths[0];
                 if (IsFileExtension(filePath, ".wav")) {
                     string fullCode = ConvertWavToBytebeat(filePath);
-                    state.currentMode = AppState::BytebeatMode::JS_Compatible;
                     LoadCodeToEditor(fullCode);
                 }
             }
@@ -126,9 +125,8 @@ int main() {
             state.inputBuf[sizeof(state.inputBuf) - 1] = '\0';
 
             state.errorMsg.clear();
-            state.valid = (state.currentMode == AppState::BytebeatMode::C_Compatible)
-                ? state.expr.Compile(realCode, state.errorMsg, state.errorPos)
-                : state.complexEngine.Compile(realCode, state.errorMsg, state.errorPos);
+            state.errorMsg.clear();
+            state.valid = state.engine.Compile(realCode, state.errorMsg, state.errorPos);
 
             UpdateErrorMarkers();
         }
@@ -167,11 +165,6 @@ int main() {
             const char* targetPresetName = "Schnuffel Haschenparty";
             for (const auto& preset : g_presets) {
                 if (preset.title == targetPresetName) {
-                    state.currentMode = 
-                        (preset.mode == PresetMode::Classic)
-                        ? AppState::BytebeatMode::C_Compatible
-                        : AppState::BytebeatMode::JS_Compatible;
-
                     LoadCodeToEditor(preset.code);
                     state.playing = false;
 
@@ -200,39 +193,6 @@ int main() {
             : sprintf(zoomBuf, "1/%dx", (int)state.zoomFactors[state.zoomIdx]);
 
         if (ImGui::Button(zoomBuf, ImVec2(60, 40))) state.zoomIdx = (state.zoomIdx + 1) % 4; 
-        ImGui::SameLine();
-
-        const char* modeNames[] = { "Classic (C)", "Javascript (JS)" };
-        int currentModeIdx = (state.currentMode == AppState::BytebeatMode::C_Compatible) ? 0 : 1;
-
-        ImGui::SetNextItemWidth(250.0f);
-        if (ImGui::BeginCombo("##EngineMode", modeNames[currentModeIdx])) {
-            for (int i = 0; i < 2; i++) {
-                bool isSelected = (currentModeIdx == i);
-                if (ImGui::Selectable(modeNames[i], isSelected)) {
-                    state.currentMode = (i == 0)
-                        ? AppState::BytebeatMode::C_Compatible 
-                        : AppState::BytebeatMode::JS_Compatible;
-
-                    string viewCode = state.editor.GetText();
-                    string realCode = ExpandCode(viewCode);
-
-                    strncpy(state.inputBuf, viewCode.c_str(), sizeof(state.inputBuf) - 1);
-                    state.inputBuf[sizeof(state.inputBuf) - 1] = '\0';
-
-                    state.t = 0;
-                    state.tAccum = 0.0;
-
-                    state.valid = state.currentMode == AppState::BytebeatMode::C_Compatible
-                        ? state.expr.Compile(realCode, state.errorMsg, state.errorPos)
-                        : state.complexEngine.Compile(realCode, state.errorMsg, state.errorPos);
-
-                    UpdateErrorMarkers();
-                }
-                if (isSelected) ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
         ImGui::SameLine();
 
         // FIT TO WINDOW
@@ -281,13 +241,13 @@ int main() {
         if (!state.valid) ImGui::BeginDisabled();
         if (ImGui::Button("Export to WAV", ImVec2(buttonWidth, 0))) {
             strncpy(state.exportFilenameBuf, "output.wav", sizeof(state.exportFilenameBuf) - 1);
-            ImGui::OpenPopup("Export Bytebeat");
+            ImGui::OpenPopup("ExportBytebeat");
         }
         
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
-        if (ImGui::BeginPopupModal("Export Bytebeat", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (ImGui::BeginPopupModal("ExportBytebeat", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text("Enter export options:");
             ImGui::Spacing();
             
@@ -329,11 +289,6 @@ int main() {
                 if (label.length() > 40) label = label.substr(0, 40) + "...";
 
                 if (ImGui::Selectable(label.c_str())) {
-                    state.currentMode = 
-                        preset.mode == PresetMode::Classic
-                        ? AppState::BytebeatMode::C_Compatible
-                        : AppState::BytebeatMode::JS_Compatible;
-
                     LoadCodeToEditor(preset.code);
 
                     // Auto-select sample rate
@@ -382,18 +337,13 @@ int main() {
             uint32_t triggeredT = FindTrigger(state.t);
             float numSamples = 512.0f * state.zoomFactors[state.zoomIdx];
 
-            // Cache variables for loop performance
-            const auto& expr = state.expr;
-            auto& cxEngine = state.complexEngine;
-            bool isJS = (state.currentMode == AppState::BytebeatMode::JS_Compatible);
-
             for (int n = 0; n < 255; n++) {
                 float tIdx1 = ((float)n / 256.0f) * numSamples;
                 float tIdx2 = ((float)(n + 1) / 256.0f) * numSamples;
 
                 // Optimized call
-                int v1 = isJS ? cxEngine.Eval(triggeredT + (uint32_t)tIdx1) : expr.Eval(triggeredT + (uint32_t)tIdx1);
-                int v2 = isJS ? cxEngine.Eval(triggeredT + (uint32_t)tIdx2) : expr.Eval(triggeredT + (uint32_t)tIdx2);
+                int v1 = state.engine.Eval(triggeredT + (uint32_t)tIdx1);
+                int v2 = state.engine.Eval(triggeredT + (uint32_t)tIdx2);
 
                 float x1 = p.x + (float)n / 256.0f * sz.x;
                 float y1 = p.y + sz.y - (((v1 & 0xFF) / 255.0f) * sz.y);

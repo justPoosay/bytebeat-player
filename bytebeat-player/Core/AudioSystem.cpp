@@ -7,10 +7,7 @@ void MyAudioCallback(void* buffer, unsigned int frames) {
 
     for (unsigned int i = 0; i < frames; i++) {
         if (state.playing && state.valid) {
-            int v = 0;
-
-            if (state.currentMode == AppState::BytebeatMode::C_Compatible) v = state.expr.Eval(state.t);
-            else v = state.complexEngine.Eval(state.t);
+            int v = state.engine.Eval(state.t);
             
             float sample = ((v & 0xFF) / 127.5f - 1.0f);
             out[i] = (short)(sample * 32767.0f * state.volume);

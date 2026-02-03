@@ -5,31 +5,19 @@
 #include <vector>
 #include <map>
 
-enum class PresetMode {
-    Classic,
-    Complex
-};
-
 struct BytebeatPreset {
     std::string title;
     std::string code;
     int sampleRate;
-    PresetMode mode;
 
-    BytebeatPreset() : title(""), code(""), sampleRate(8000), mode(PresetMode::Classic) {}
-    //BytebeatPreset(std::string t, std::string c, int sr = 8000, PresetMode m = PresetMode::Classic)
-    //    : title(t), code(c), sampleRate(sr), mode(m) {
-    //}
+    BytebeatPreset() : title(""), code(""), sampleRate(8000) {}
 };
 
 extern std::vector<BytebeatPreset> g_presets;
 
 struct AppState {
     // Logic
-    BytebeatExpression expr;
-    ComplexEngine complexEngine;
-    enum class BytebeatMode { C_Compatible, JS_Compatible };
-    BytebeatMode currentMode = BytebeatMode::C_Compatible;
+    ComplexEngine engine;
 
     // Quick access
     std::vector<double> vmMemory;

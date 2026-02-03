@@ -30,7 +30,6 @@ This project is built using Visual Studio 2022.
 
 ## ToDo List
 ### Pending
-- [ ] Merge Classic (C) and Javascript (JS) engines
 - [ ] Improve Editor window (relocate Zoom/Engine/Format buttons to Settings window)
 - [ ] Update `CompressCode()` to allow multiple data strings with converted .wav
 - [ ] Expand Editor (input box) to accept comments (// ...)
@@ -40,6 +39,7 @@ This project is built using Visual Studio 2022.
 - [ ] Add button for creating custom presets to folder
 - [ ] Bad Apple XD
 ### Completed
+- [x] ~~Merge Classic (C) and Javascript (JS) engines~~
 - [x] ~~Update `ExportToWav()` to include user input for exported sample length~~
 - [x] ~~Fix `ExportToWav()` (exports silent audio with some shooting noises)~~
 - [x] ~~Fix compiler to accept variables in formula~~
