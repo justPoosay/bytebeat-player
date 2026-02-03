@@ -32,8 +32,6 @@ This project is built using Visual Studio 2022.
 ### Pending
 - [ ] Merge Classic (C) and Javascript (JS) engines
 - [ ] Improve Editor window (relocate Zoom/Engine/Format buttons to Settings window)
-- [ ] Fix `ExportToWav()` (exports silent audio with some shooting noises)
-- [ ] Update `ExportToWav()` to include user input for exported sample length (currently fixed at 30s)
 - [ ] Update `CompressCode()` to allow multiple data strings with converted .wav
 - [ ] Expand Editor (input box) to accept comments (// ...)
 - [ ] Fix formatter to not affect lines with string variables (ones used by charCodeAt)
@@ -42,8 +40,10 @@ This project is built using Visual Studio 2022.
 - [ ] Add button for creating custom presets to folder
 - [ ] Bad Apple XD
 ### Completed
+- [x] ~~Update `ExportToWav()` to include user input for exported sample length~~
+- [x] ~~Fix `ExportToWav()` (exports silent audio with some shooting noises)~~
 - [x] ~~Fix compiler to accept variables in formula~~
-- [x] Schnuffel Haschenparty: fix "t%=1451520" so that it works correctly
+- [x] ~~Schnuffel Haschenparty: fix "t%=1451520" so that it works correctly~~
 - [x] ~~Move presets from Presets.cpp to separate .txt file for each preset~~
 - [x] ~~change converted audio format from 8000Hz to 32000Hz in `ConvertWavToBytebeat()`~~
 - [x] ~~add charCodeAt (for "importing" wav songs)~~

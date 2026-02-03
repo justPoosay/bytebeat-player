@@ -279,7 +279,38 @@ int main() {
 
         if (ImGui::Button("Copy Formula", ImVec2(buttonWidth, 0))) ImGui::SetClipboardText(state.editor.GetText().c_str());
         if (!state.valid) ImGui::BeginDisabled();
-        if (ImGui::Button("Quick Export (30s)", ImVec2(buttonWidth, 0))) ExportToWav();
+        if (ImGui::Button("Export to WAV", ImVec2(buttonWidth, 0))) {
+            strncpy(state.exportFilenameBuf, "output.wav", sizeof(state.exportFilenameBuf) - 1);
+            ImGui::OpenPopup("Export Bytebeat");
+        }
+        
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+        if (ImGui::BeginPopupModal("Export Bytebeat", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Enter export options:");
+            ImGui::Spacing();
+            
+            ImGui::InputText("Filename", state.exportFilenameBuf, sizeof(state.exportFilenameBuf));
+            ImGui::InputInt("Duration (s)", &state.exportDuration);
+
+            if (state.exportDuration < 1) state.exportDuration = 1;
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            if (ImGui::Button("Export", ImVec2(120, 0))) {
+                ExportToWav();
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
         if (!state.valid) ImGui::EndDisabled();
 
         ImGui::Columns(1);
@@ -404,11 +435,35 @@ int main() {
 
         // --- SUCCESS POPUP ---
         if (state.successMsgTimer > 0) {
-            state.successMsgTimer -= GetFrameTime();
-            ImGui::SetNextWindowPos(ImVec2(GetScreenWidth() / 2, GetScreenHeight() / 2), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-            ImGui::Begin("##Success", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
-            ImGui::TextColored(ImVec4(0, 1, 0, 1), "SUCCESS: '%s' saved!", state.fileName.c_str());
+            float dt = GetFrameTime();
+            state.successMsgTimer -= dt;
+
+            // Animation
+            float initialDuration = 3.0f;
+            float timeElapsed = initialDuration - state.successMsgTimer;
+            
+            // Ascend: Move up 50 pixels per second
+            float startY = GetScreenHeight() / 2.0f;
+            float currentY = startY - (timeElapsed * 50.0f);
+
+            // Fade: 1.0 for first 2s, then fade to 0.0 in last 1s
+            float alpha = (state.successMsgTimer > 1.0f) ? 1.0f : state.successMsgTimer;
+            if (alpha < 0.0f) alpha = 0.0f;
+
+            ImGui::SetNextWindowPos(ImVec2(GetScreenWidth() / 2.0f, currentY), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+            
+            // Flags: No inputs (click-through), no title/resize
+            ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | 
+                                   ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove;
+
+            if (ImGui::Begin("##Success", NULL, flags)) {
+                ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.6f, 1.0f), "SUCCESS: exported '%s'", state.fileName.c_str());
+                
+                // Optional: add subtle background or border if needed, but default window style is usually fine
+            }
             ImGui::End();
+            ImGui::PopStyleVar(); 
         }
 
         rlImGuiEnd();

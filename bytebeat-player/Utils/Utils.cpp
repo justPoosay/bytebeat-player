@@ -69,17 +69,21 @@ void UpdateErrorMarkers() {
 void ExportToWav() {
     if (!state.valid) return;
 
-    time_t now = time(0);
-    tm* ltm = localtime(&now);
-    char timeStr[64];
-    strftime(timeStr, sizeof(timeStr), "%d-%m-%Y_%H-%M", ltm);
+    if (strlen(state.exportFilenameBuf) == 0) {
+        strncpy(state.exportFilenameBuf, "output.wav", sizeof(state.exportFilenameBuf) - 1);
+    }
+    
+    // Ensure .wav extension
+    string fileName = state.exportFilenameBuf;
+    if (fileName.length() < 4 || fileName.substr(fileName.length() - 4) != ".wav") {
+        fileName += ".wav";
+    }
 
-    string fileName = "bytebeat_" + string(timeStr) + ".wav";
     state.fileName = fileName;
 
     const int exportRate = 44100;
     int targetRate = state.rates[state.rateIdx];
-    uint32_t seconds = 30;
+    uint32_t seconds = (state.exportDuration > 0) ? state.exportDuration : 30;
     uint32_t totalSamples = seconds * exportRate;
 
     FILE* f = fopen(fileName.c_str(), "wb");
@@ -106,7 +110,9 @@ void ExportToWav() {
     double tInc = (double)targetRate / (double)exportRate;
 
     for (uint32_t i = 0; i < totalSamples; i++) {
-        int v = state.expr.Eval(tLocal);
+        int v = (state.currentMode == AppState::BytebeatMode::C_Compatible)
+            ? state.expr.Eval(tLocal)
+            : state.complexEngine.Eval(tLocal);
         fputc((unsigned char)(v & 0xFF), f);
 
         tAccumLocal += tInc;

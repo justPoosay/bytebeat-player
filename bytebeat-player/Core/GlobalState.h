@@ -81,6 +81,8 @@ struct AppState {
     float exportProgress = -1.0f;
     float successMsgTimer = 0.0f;
     std::string fileName = "";
+    int exportDuration = 30;
+    char exportFilenameBuf[128] = { 0 };
 
     AppState(); // Constructor
 };
