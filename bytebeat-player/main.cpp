@@ -369,10 +369,9 @@ int main() {
 
             ImVec2 textSize = ImGui::GetFont()->CalcTextSizeA(28.0f, FLT_MAX, 0.0f, icon);
             ImVec2 textPos(btnCenter.x - textSize.x / 2, btnCenter.y - textSize.y / 2);
-            textPos.y += 2.0f; // Correction in vertical axis
+            textPos.y += 2.0f;
             dl->AddText(NULL, 28.0f, textPos, IM_COL32(255, 255, 255, 255), icon);
 
-            // Tooltip
             ImGui::SetTooltip("LMB: Play/Pause\nRMB: Reset");
 
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) state.playing = !state.playing;
@@ -388,29 +387,22 @@ int main() {
             float dt = GetFrameTime();
             state.successMsgTimer -= dt;
 
-            // Animation
             float initialDuration = 3.0f;
             float timeElapsed = initialDuration - state.successMsgTimer;
             
-            // Ascend: Move up 50 pixels per second
             float startY = GetScreenHeight() / 2.0f;
             float currentY = startY - (timeElapsed * 50.0f);
 
-            // Fade: 1.0 for first 2s, then fade to 0.0 in last 1s
             float alpha = (state.successMsgTimer > 1.0f) ? 1.0f : state.successMsgTimer;
             if (alpha < 0.0f) alpha = 0.0f;
 
             ImGui::SetNextWindowPos(ImVec2(GetScreenWidth() / 2.0f, currentY), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
             
-            // Flags: No inputs (click-through), no title/resize
-            ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | 
-                                   ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove;
+            ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove;
 
             if (ImGui::Begin("##Success", NULL, flags)) {
                 ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.6f, 1.0f), "SUCCESS: exported '%s'", state.fileName.c_str());
-                
-                // Optional: add subtle background or border if needed, but default window style is usually fine
             }
             ImGui::End();
             ImGui::PopStyleVar(); 

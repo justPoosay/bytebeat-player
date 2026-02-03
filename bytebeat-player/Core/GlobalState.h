@@ -43,7 +43,6 @@ struct AppState {
         return varTable[name];
     }
 
-    std::map<std::string, double> jsVars; // (Optional/Legacy?)
     TextEditor editor;
     bool playing = false;
     bool valid = false;
