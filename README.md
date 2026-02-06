@@ -31,6 +31,7 @@ This project is built using Visual Studio 2022.
 ## ToDo List
 ### Pending
 - [ ] Improve Editor window (relocate Zoom/Engine/Format buttons to Settings window)
+- [ ] Add function to load .txt presets from .bmp images
 - [ ] Update `CompressCode()` to allow multiple data strings with converted .wav
 - [ ] Expand Editor (input box) to accept comments (// ...)
 - [ ] Fix formatter to not affect lines with string variables (ones used by charCodeAt)
@@ -39,6 +40,7 @@ This project is built using Visual Studio 2022.
 - [ ] Add button for creating custom presets to folder
 - [ ] Bad Apple XD
 ### Completed
+- [x] ~~Remove "Mode" (engine) from Presets~~
 - [x] ~~Merge Classic (C) and Javascript (JS) engines~~
 - [x] ~~Update `ExportToWav()` to include user input for exported sample length~~
 - [x] ~~Fix `ExportToWav()` (exports silent audio with some shooting noises)~~
