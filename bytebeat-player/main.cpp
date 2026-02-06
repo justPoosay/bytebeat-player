@@ -58,7 +58,9 @@ int main() {
     // Init Editor
     auto lang = TextEditor::LanguageDefinition::C();
     static const char* const keywords[] = {
-        "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh", 
+        "sin", "cos", "tan",
+        "asin", "acos", "atan", "atan2", 
+        "sinh", "cosh", "tanh", 
         "exp", "log", "log10", "pow", "sqrt", 
         "ceil", "floor", "fmod", "round"
     };
