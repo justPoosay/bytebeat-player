@@ -1,5 +1,4 @@
 ﻿Title=Stimmer
 Rate=8000
-Mode=Classic
 Code=
 t*(4|t>>13&3)>>(~t>>11&1)&128|t*(t>>11&t>>13)*(~t>>9&3)&127

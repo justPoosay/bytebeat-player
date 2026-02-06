@@ -1,5 +1,4 @@
 ﻿Title=Random Note Generator
 Rate=44100
-Mode=Classic
 Code=
 t/2*(6+((t^t/2^t/4&t/8)>>13&3))/6%128+t/4*(6+(t>>18&3))/6%128

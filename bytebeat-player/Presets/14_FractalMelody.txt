@@ -1,5 +1,4 @@
 ﻿Title=Remix of Fractal melody
 Rate=11025
-Mode=Classic
 Code=
 (((t/10|0)^(t/10|0)-1280)%11*t/2&127)+(((t/640|0)^(t/640|0)-2)%13*t/2&127)

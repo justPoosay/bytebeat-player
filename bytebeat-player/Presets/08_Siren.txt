@@ -1,5 +1,4 @@
 ﻿Title=Siren
 Rate=8000
-Mode=Classic
 Code=
 (t*5&t>>7)|(t*3&t>>10)

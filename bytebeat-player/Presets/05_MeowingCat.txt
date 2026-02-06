@@ -1,5 +1,4 @@
 ﻿Title=Remix of Meowing Cat
 Rate=8000
-Mode=Classic
 Code=
 t*((t/2>>10|t%16*t>>8)&8*t>>12&18)|-(t/16)+64

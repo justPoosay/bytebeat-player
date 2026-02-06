@@ -1,5 +1,4 @@
 ﻿Title=Weird transition thing
 Rate=8000
-Mode=Classic
 Code=
 (t^t*1.01),t&t>>4&32

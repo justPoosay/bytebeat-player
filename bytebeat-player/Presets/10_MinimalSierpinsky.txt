@@ -1,5 +1,4 @@
 ﻿Title=Minimal sierpinsky
 Rate=8000
-Mode=Classic
 Code=
 t&t>>8
